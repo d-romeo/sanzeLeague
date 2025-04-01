@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vue.js Responsive App</title>
+    <title>Sanze League</title>
     <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/js-cookie/3.0.1/js.cookie.min.js"></script>
-    <!-- Material Design Icons (Locale) -->
-    <link href="/css/materialdesignicons.min.css" rel="stylesheet"> 
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
     <!-- Vuetify (CDN) -->
     <link href="https://unpkg.com/vuetify@2.6.0/dist/vuetify.min.css" rel="stylesheet">
     <link rel="stylesheet" href="styles.css"> 
@@ -17,18 +17,6 @@
         <header>
             <h1>{{ titolo }}</h1>
         </header>
-
-        <main>
-            <p>Questo è un esempio di layout responsive con Vue.js.</p>
-            <button @click="toggleMenu">Mostra/Nascondi Menu</button>
-            <nav v-show="menuVisibile">
-                <ul>
-                    <li><a href="#">Home</a></li>
-                    <li><a href="#">Chi Siamo</a></li>
-                    <li><a href="#">Contatti</a></li>
-                </ul>
-            </nav>
-        </main>
         
         <footer>
             <p>&copy; 2025 - Il tuo sito</p>

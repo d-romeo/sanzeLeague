@@ -1,47 +1,19 @@
-body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    text-align: center;
+/* Font applicazione*/
+.v-application {
+    font-family: 'Inter', sans-serif;
+  }
+
+/* Font titolo */
+.custom-title {
+    font-family: 'Inter', sans-serif;
+    color: #d0a349; 
 }
 
-header {
-    background-color: #007bff;
-    color: white;
-    padding: 15px;
+/* Componenti card*/
+.zoom-card {
+    transition: transform 1s ease-in-out; /* Transizione fluida */
 }
-
-main {
-    padding: 20px;
-}
-
-button {
-    padding: 10px;
-    font-size: 16px;
-    margin-top: 10px;
-    cursor: pointer;
-}
-
-nav ul {
-    list-style-type: none;
-    padding: 0;
-}
-
-nav ul li {
-    display: inline-block;
-    margin: 10px;
-}
-
-nav ul li a {
-    text-decoration: none;
-    color: #007bff;
-    font-weight: bold;
-}
-
-/* Media Query per schermi più piccoli */
-@media (max-width: 600px) {
-    nav ul li {
-        display: block;
-        margin: 5px 0;
-    }
+.zoom-card:hover {
+    transform: scale(1.05); 
+    transition: transform 1s ease-in-out 0.3s; /* Ritardo sull'effetto di zoom */
 }
