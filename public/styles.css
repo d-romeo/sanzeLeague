@@ -1,0 +1,105 @@
+/* Imposta lo sfondo immagine sull'intera pagina */
+body {
+    margin: 0; /* Rimuovi i margini predefiniti del browser */
+    padding: 0; /* Rimuovi il padding predefinito */
+    background-image: url('/image/back.jpg'); /* Sostituisci con il tuo URL */
+    background-size: cover; /* Adatta l'immagine coprendo tutto lo schermo */
+    background-position: center; /* Centra l'immagine */
+    background-repeat: no-repeat; /* Non ripetere l'immagine */
+    background-attachment: fixed; /* Fissa l'immagine durante lo scorrimento */
+    height: 100vh; /* Assicura che il corpo occupi l'intera altezza dello schermo */
+    overflow-x: hidden; /* Nascondi lo scorrimento orizzontale */
+}
+
+/* Assicura che il contenuto dell'app sia trasparente */
+.v-application {
+    background-color: transparent !important; /* Rimuovi eventuali colori di sfondo di Vuetify */
+}
+        
+
+
+/* Font titolo */
+.custom-title {
+    font-family: 'Inter', sans-serif;
+    color: #d0a349; 
+}
+
+/* Componenti card */
+.zoom-card {
+    transition: transform 1s ease-in-out; /* Transizione fluida */
+}
+.zoom-card:hover {
+    transform: scale(1.05); 
+    transition: transform 1s ease-in-out 0.3s; /* Ritardo sull'effetto di zoom */
+}
+
+/* Testo punteggio responsive */
+.score-text {
+    font-weight: bold;
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+    .score-text {
+        font-size: 2.5rem;
+    }
+}
+
+/* Tablet */
+@media (min-width: 601px) and (max-width: 960px) {
+    .score-text {
+        font-size: 3.5rem;
+    }
+}
+
+/* Desktop */
+@media (min-width: 961px) {
+    .score-text {
+        font-size: 4rem;
+    }
+}
+
+.player-img {
+    object-fit: contain;
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+    .player-img {
+        width: 60px;
+        height: 60px;
+    }
+}
+
+/* Tablet */
+@media (min-width: 601px) and (max-width: 960px) {
+    .player-img {
+        width: 80px;
+        height: 80px;
+    }
+}
+
+/* Desktop */
+@media (min-width: 961px) {
+    .player-img {
+        width: 100px;
+        height: 100px;
+    }
+}
+
+/* Personalizza il carosello */
+.v-carousel {
+    border: none; /* Rimuove eventuali bordi */
+}
+
+.v-carousel__item {
+    padding: 0; /* Rimuove lo spazio interno */
+}
+
+.v-carousel__item--active {
+    margin: 0; /* Rimuove margini */
+}
+
+.v-carousel__controls {
+    display: none; /* Nascondi controlli se non necessari */
+}
