@@ -1,17 +1,36 @@
 <?php
-// include '/home/u908685741/domains/rometimerror.it/public_html/management-alfa/v1/api/db.php';
+// Imposta l'intestazione per la risposta JSON
+header('Content-Type: application/json');
 
-//try {
-    //$pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
-    //$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+// Include il file per la connessione al database
+include '/home/u908685741/domains/rometimerror.it/public_html/sanze/api/db.php';
 
-    // Query per recuperare il parametro
-    //$stmt = $pdo->query("SELECT template_id FROM users WHERE id = 1"); // Adatta la query al tuo caso
-    //$result = $stmt->fetch(PDO::FETCH_ASSOC);
+try {
+    // Crea una connessione PDO
+    $pdo = new PDO("mysql:host=$host;dbname=$db;charset=utf8", $user, $pass);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    // Restituisci il parametro come JSON
-    echo json_encode(['template_id' => 2]);
-//} catch (PDOException $e) {
-    //echo json_encode(['error' => $e->getMessage()]);
-//}
+    // Esegui la query per ottenere i dati
+    $stmt = $pdo->query("SELECT actual_state FROM instant WHERE id = 1");
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    // Controlla se c'è un risultato e invia la risposta JSON
+    if ($result) {
+        echo json_encode([
+            'success' => true,
+            'template' => $result
+        ]);
+    } else {
+        echo json_encode([
+            'success' => false,
+            'message' => 'Nessun risultato trovato'
+        ]);
+    }
+} catch (PDOException $e) {
+    // Gestione degli errori
+    echo json_encode([
+        'success' => false,
+        'error' => $e->getMessage()
+    ]);
+}
 ?>

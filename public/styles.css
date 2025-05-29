@@ -1,14 +1,13 @@
-/* Imposta lo sfondo immagine sull'intera pagina */
 body {
-    margin: 0; /* Rimuovi i margini predefiniti del browser */
-    padding: 0; /* Rimuovi il padding predefinito */
-    background-image: url('/image/back.jpg'); /* Sostituisci con il tuo URL */
-    background-size: cover; /* Adatta l'immagine coprendo tutto lo schermo */
-    background-position: center; /* Centra l'immagine */
-    background-repeat: no-repeat; /* Non ripetere l'immagine */
-    background-attachment: fixed; /* Fissa l'immagine durante lo scorrimento */
-    height: 100vh; /* Assicura che il corpo occupi l'intera altezza dello schermo */
-    overflow-x: hidden; /* Nascondi lo scorrimento orizzontale */
+    margin: 0;
+    padding: 0;
+    background-image: url('/sanze/image/back.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    min-height: 100vh; /* Altezza minima, ma può crescere col contenuto */
+    overflow-x: hidden;
 }
 
 /* Assicura che il contenuto dell'app sia trasparente */
@@ -17,6 +16,12 @@ body {
 }
         
 
+html, body {
+    height: 100%;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    scroll-behavior: smooth;
+}
 
 /* Font titolo */
 .custom-title {
@@ -87,19 +92,65 @@ body {
     }
 }
 
-/* Personalizza il carosello */
+/* Assicurati che il carosello abbia un'altezza fissa */
 .v-carousel {
-    border: none; /* Rimuove eventuali bordi */
+    height: 400px; /* Imposta un'altezza fissa */
+    overflow: hidden; /* Nascondi eventuali contenuti che eccedono l'altezza */
 }
 
+/* Assicurati che le immagini abbiano la stessa altezza */
 .v-carousel__item {
-    padding: 0; /* Rimuove lo spazio interno */
+    height: 100%; /* Assicurati che le immagini occupino tutta l'altezza del carosello */
 }
 
+.v-img {
+    height: 100%; /* Assicurati che le immagini occupino tutta l'altezza del contenitore */
+    object-fit: cover; /* Mantieni le proporzioni delle immagini */
+}
+
+/* Rimuovi eventuali margini o padding che potrebbero causare spostamenti */
 .v-carousel__item--active {
-    margin: 0; /* Rimuove margini */
+    margin: 0;
+    padding: 0;
 }
 
-.v-carousel__controls {
-    display: none; /* Nascondi controlli se non necessari */
+  
+.regolamento-text {
+    white-space: normal !important;
+    word-break: break-word !important;
 }
+
+/* Stile generale per le card teams*/
+.custom-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-radius: 10px !important;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    margin: 10px;
+    background: linear-gradient(145deg, #1e1e1e, #977511) !important;
+}
+
+.custom-card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+}
+
+/* Stile per il titolo delle card */
+.custom-card-title {
+    color: #c8c8c8 !important; /* Marrone scuro per contrasto */
+    font-weight: bold;
+    font-size: 1.2em;
+    text-align: center;
+    padding: 16px;
+     text-transform: uppercase; /* Testo in maiuscolo */
+}
+
+/* Stile per il contenuto delle card */
+.custom-card-text {
+    padding: 16px !important;
+    text-align: center;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+
+

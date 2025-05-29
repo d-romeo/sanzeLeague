@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Pannello di Controllo Torneo</title>
+  <link href="https://unpkg.com/vuetify@2.6.0/dist/vuetify.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/@mdi/font/css/materialdesignicons.min.css" rel="stylesheet">
+  <script src="https://unpkg.com/vue@2.6.14/dist/vue.js"></script>
+  <script src="https://unpkg.com/vuetify@2.6.0/dist/vuetify.js"></script>
+  <style>
+    body, .v-application {
+      background-color: #8c8c8c !important;
+    }
+    .v-card, .v-list, .v-data-table {
+      background-color: #1E1E1E !important;
+      color: white !important;
+    }
+    .v-card__title, .v-list-item__title, .v-input input, .v-label, .v-select__selections{
+      color: white !important;
+    }
+    .v-input__slot {
+      background-color: #333 !important;
+    }
+    .v-list-item--active, .selected {
+      background-color: rgba(255, 255, 255, 0.2) !important;
+    }
+    .custom-table thead th {
+      color: white !important;
+    }
+    .custom-table tbody tr:hover {
+      background-color: transparent !important;
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+  <v-app>
+    <v-container>
+      <v-row>
+        <v-col cols="12">
+          <h1 class="text-center" style="color: white;">Pannello di Controllo SZ LEAGUE</h1>
+        </v-col>
+      </v-row>
+      <v-tabs v-model="tab" background-color="#333" dark grow>
+        <v-tab>Momento Torneo</v-tab>
+        <v-tab>Squadre</v-tab>
+        <v-tab>Giocatori</v-tab>
+        <v-tab>Partite</v-tab>
+        <v-tab>Goal</v-tab>
+      </v-tabs>
+
+      <v-tabs-items v-model="tab">
+
+        <!-- Sezione Momento Torneo -->
+        <v-tab-item>
+          <v-card class="pa-4">
+            <v-card-title class="text-h6 d-flex justify-space-between align-center">
+              Seleziona il momento del Torneo
+            </v-card-title>
+            <v-card-text>
+              <v-row dense>
+                <v-col
+                  v-for="momento in momentiTorneo"
+                  :key="momento"
+                  cols="6"
+                >
+                  <v-card
+                    :elevation="momentoSalvato === momento ? 8 : 2"
+                    :color="momentoSalvato === momento ? 'primary' : ''"
+                    :dark="momentoSalvato === momento"
+                    class="pa-3 text-center"
+                    @click="selezionaMomento(momento)"
+                    style="cursor: pointer;"
+                  >
+                    {{ momento }}
+                  </v-card>
+                </v-col>
+              </v-row>
+            </v-card-text>
+          </v-card>
+
+          <!-- Card gestione Classifica -->
+          <template>
+            <v-card class="pa-4" v-if="momentoSalvato === 'classifica'">
+              <v-card-title class="text-h6 d-flex justify-space-between align-center">
+                Gestione Classifica
+              </v-card-title>
+              <v-card-text>
+                <v-data-table
+                  :headers="headersClassifica"
+                  :items="classificaFinale"
+                  :items-per-page="-1"
+                  class="elevation-1 custom-table"
+                  style="max-height: 400px; overflow-y: auto;"
+                  :footer-props="{ 'items-per-page-options': [-1] }"
+                  item-key="id"
+                >
+                  <template v-slot:item.azioni="{ item }">
+                    <v-btn icon small color="green" @click="aggiungiPunto(item)">
+                      <v-icon>mdi-plus</v-icon>
+                    </v-btn>
+                    <v-btn icon small color="red" @click="togliPunto(item)">
+                      <v-icon>mdi-minus</v-icon>
+                    </v-btn>
+                  </template>
+                </v-data-table>
+              </v-card-text>
+            </v-card>
+          </template>
+          
+        </v-tab-item>
+
+        <!-- Sezione Squadre -->
+        <v-tab-item>
+          <v-card class="pa-4">
+            <v-card-title class="text-h6 d-flex justify-space-between align-center">
+              Gestione Nome e Stato Squadre
+            </v-card-title>
+            <v-card-text>
+              <v-row>
+                <v-col cols="6">
+                  <v-list dense>
+                    <v-list-item
+                      v-for="(squadra, index) in squadre.slice(0, Math.ceil(squadre.length / 2))"
+                      :key="index"
+                      @click="selezionaSquadra(index)"
+                      :class="{ 'selected': index === squadraSelezionata }"
+                    >
+                      <v-list-item-content>
+                        <v-list-item-title>{{ squadra.name }} - Stato: {{ squadra.cod_actual_state }}</v-list-item-title>
+                      </v-list-item-content>
+                    </v-list-item>
+                  </v-list>
+                </v-col>
+                <v-col cols="6">
+                  <v-list dense>
+                    <v-list-item
+                      v-for="(squadra, index) in squadre.slice(Math.ceil(squadre.length / 2))"
+                      :key="index + Math.ceil(squadre.length / 2)"
+                      @click="selezionaSquadra(index + Math.ceil(squadre.length / 2))"
+                      :class="{ 'selected': index + Math.ceil(squadre.length / 2) === squadraSelezionata }"
+                    >
+                      <v-list-item-content>
+                        <v-list-item-title>{{ squadra.name }} - Stato: {{ squadra.cod_actual_state }}</v-list-item-title>
+                      </v-list-item-content>
+                    </v-list-item>
+                  </v-list>
+                </v-col>
+              </v-row>
+              <div v-if="squadraSelezionata !== null" class="mt-4">
+                <v-btn color="primary" @click="modificaSquadra(squadraSelezionata)" class="mr-2">
+                  Modifica
+                </v-btn>
+                <v-btn color="error" @click="eliminaSquadra(squadraSelezionata)">
+                  Cancella
+                </v-btn>
+              </div>
+              <v-btn color="primary" @click="aggiungiSquadra" class="mt-4">
+                Aggiungi Squadra
+              </v-btn>
+            </v-card-text>
+          </v-card>
+        </v-tab-item>
+
+        <!-- Sezione Giocatori -->
+        <v-tab-item>
+          <v-card class="pa-4">
+            <v-card-title class="text-h6 d-flex justify-space-between align-center">
+              Gestione Giocatori
+            </v-card-title>
+            <v-card-text>
+              <v-row dense>
+                <v-col cols="12" sm="4">
+                  <v-text-field
+                    v-model="searchQuery"
+                    label="Cerca Giocatore"
+                    outlined
+                    dense
+                    color="white"
+                    @input="filtraGiocatori"
+                  ></v-text-field>
+                </v-col>
+                <v-col cols="12" sm="4">
+                  <v-select
+                    v-model="filtroRuolo"
+                    :items="[{ value: null, label: 'Tutti' }, ...tipiUtente]"
+                    item-text="label"
+                    item-value="value"
+                    label="Filtra per Ruolo"
+                    outlined
+                    dense
+                    color="white"
+                    @change="filtraGiocatori"
+                  ></v-select>
+                </v-col>
+                <v-col cols="12" sm="4">
+                  <v-select
+                    v-model="filtroSquadra"
+                    :items="[{ id_team: null, name: 'Tutte' }, ...squadre]"
+                    item-text="name"
+                    item-value="id_team"
+                    label="Filtra per Squadra"
+                    outlined
+                    dense
+                    color="white"
+                    @change="filtraGiocatori"
+                  ></v-select>
+                </v-col>
+              </v-row>
+
+              <v-data-table
+                :headers="headersGiocatori"
+                :items="giocatoriFiltrati"
+                :items-per-page="-1"
+                class="elevation-1 custom-table"
+                style="max-height: 400px; overflow-y: auto;"
+                :footer-props="{ 'items-per-page-options': [-1] }"
+                item-key="id"
+              >
+                <template v-slot:item.name="{ item }">
+                  {{ item.name }} {{ item.surname }}
+                </template>
+                <template v-slot:item.type="{ item }">
+                  {{ getTipoUtente(item.type) }}
+                </template>
+                <template v-slot:item.cod_team="{ item }">
+                  {{ getNomeSquadra(item.cod_team) }}
+                </template>
+                <template v-slot:item.actions="{ item, index }">
+                  <v-btn small color="primary" @click="modificaGiocatore(index)" class="mr-2">
+                    Modifica
+                  </v-btn>
+                  <v-btn small color="error" @click="eliminaGiocatore(index)">
+                    Cancella
+                  </v-btn>
+                </template>
+                <template v-slot:body="{ items }">
+                  <tbody>
+                    <tr
+                      v-for="(item, index) in items"
+                      :key="item.id"
+                      :class="{ 'selected': index === giocatoreSelezionato }"
+                      @click="giocatoreSelezionato = index"
+                      style="cursor: pointer;"
+                    >
+                      <td>{{ item.name }} {{ item.surname }}</td>
+                      <td>{{ getTipoUtente(item.type) }}</td>
+                      <td>{{ getNomeSquadra(item.cod_team) }}</td>
+                      <td>
+                        <v-btn small color="primary" @click.stop="modificaGiocatore(index)" class="mr-2">
+                          Modifica
+                        </v-btn>
+                        <v-btn small color="error" @click.stop="eliminaGiocatore(index)">
+                          Cancella
+                        </v-btn>
+                      </td>
+                    </tr>
+                  </tbody>
+                </template>
+              </v-data-table>
+
+              <v-btn color="primary" @click="aggiungiGiocatore" class="mt-4">
+                Aggiungi Giocatore
+              </v-btn>
+            </v-card-text>
+          </v-card>
+        </v-tab-item>
+
+        <!-- Sezione Partite -->
+        <v-tab-item>
+          <v-card class="pa-4">
+            <v-card-title class="text-h6 d-flex justify-space-between align-center">
+              Gestione Partite
+            </v-card-title>
+            <v-card-text>
+              <v-row dense>
+                <v-col cols="12" sm="4">
+                  <v-text-field
+                    v-model="searchQueryPartite"
+                    label="Cerca Partita"
+                    outlined
+                    dense
+                    color="white"
+                    @input="filtraPartite"
+                  ></v-text-field>
+                </v-col>
+              </v-row>
+              <v-data-table
+                  :headers="headersPartite"
+                  :items="partiteFiltrate"
+                  :items-per-page="-1"
+                  class="elevation-1 custom-table"
+                  style="max-height: 400px; overflow-y: auto;"
+                  :footer-props="{ 'items-per-page-options': [-1] }"
+                >
+                  <template v-slot:item.squadra1="{ item }">
+                    {{ getNomeSquadra(item.cod_team1) }}
+                  </template>
+                  <template v-slot:item.squadra2="{ item }">
+                    {{ getNomeSquadra(item.cod_team2) }}
+                  </template>
+                  <template v-slot:item.actions="{ item }">
+                    <v-btn small color="primary" @click="modificaPartita(partiteFiltrate.indexOf(item))" class="mr-2">
+                      Modifica
+                    </v-btn>
+                    <v-btn small color="error" @click="eliminaPartita(partiteFiltrate.indexOf(item))">
+                      Cancella
+                    </v-btn>
+                  </template>
+                  <template v-slot:body="{ items }">
+                    <tbody>
+                      <tr v-for="item in items" :key="item.id">
+                        <td>{{ getNomeSquadra(item.cod_team1) }}</td>
+                        <td>{{ getNomeSquadra(item.cod_team2) }}</td>
+                        <td>{{ item.date }}</td>
+                        <td>
+                            <v-switch
+                              v-model="item.ended"
+                              @change="aggiornaEnded(item)"
+                              hide-details
+                              dense
+                              class="ma-0 pa-0"
+                            ></v-switch>
+                        </td>
+                        <td>
+                          <v-btn small color="primary" @click.stop="modificaPartita(partiteFiltrate.indexOf(item))" class="mr-2">
+                            Modifica
+                          </v-btn>
+                          <v-btn small color="error" @click.stop="eliminaPartita(partiteFiltrate.indexOf(item))">
+                            Cancella
+                          </v-btn>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </template>
+                </v-data-table>
+              <v-btn color="primary" @click="aggiungiPartita" class="mt-4">
+                Aggiungi Partita
+              </v-btn>
+            </v-card-text>
+          </v-card>
+        </v-tab-item>
+
+        <!-- Sezione Goal -->
+        <v-tab-item>
+          <v-card class="pa-4">
+            <v-card-title class="text-h6">
+              Gestione Goal
+            </v-card-title>
+            <v-card-text>
+              <v-row dense>
+                <v-col cols="12" sm="4">
+                  <v-select
+                    v-model="partitaSelezionata"
+                    :items="partite"
+                    item-text="nome_partita"
+                    item-value="id"
+                    label="Seleziona una partita"
+                    return-object
+                  ></v-select>
+                </v-col>
+                <v-col cols="12" sm="4">
+                  <v-select     
+                    v-if="partitaSelezionata"
+                    v-model="squadraSelezionata"
+                    :items="[
+                      { id: partitaSelezionata.cod_team1, nome: getNomeSquadra(partitaSelezionata.cod_team1) },
+                      { id: partitaSelezionata.cod_team2, nome: getNomeSquadra(partitaSelezionata.cod_team2) }
+                    ]"
+                    item-text="nome"
+                    item-value="id"
+                    label="Scegli una squadra"             
+                  ></v-select>
+                </v-col>
+                <v-col cols="12" sm="4">
+                  <v-select
+                    v-if="squadraSelezionata"
+                    v-model="giocatoreSelezionatoPerGol"
+                    :items="giocatoriPerGol"
+                    item-text="nomeCompleto"
+                    item-value="id_user"
+                    label="Seleziona il giocatore che ha segnato"
+                  ></v-select>
+                </v-col>
+              </v-row>
+
+              <v-btn color="primary" class="mt-3" @click="salvaGoal" :disabled="!giocatoreSelezionatoPerGol">
+                Aggiungi Goal
+              </v-btn>
+
+              <div>
+                <div style="display: flex; gap: 10px;">
+                  <v-text-field v-model="searchGiocatoreGoal" label="Cerca per giocatore" @input="filtraPartitePerGoal"></v-text-field>
+                  <v-text-field v-model="searchSquadraGoal" label="Cerca per squadra" @input="filtraPartitePerGoal"></v-text-field>
+                </div>
+
+                <v-data-table
+                  :headers="headersGoal"
+                  :items="goalsFiltrati"
+                  :items-per-page="-1"
+                  class="elevation-1 custom-table mt-5"
+                  style="max-height: 400px; overflow-y: auto;"
+                  :footer-props="{ 'items-per-page-options': [-1] }"
+                  item-key="id_goal"
+                >
+                  <template v-slot:item.partita="{ item }">
+                    {{ descrizionePartitaById(item.cod_match) }}
+                  </template>
+                  <template v-slot:item.squadra="{ item }">
+                    {{ getNomeSquadra(item.cod_team) }}
+                  </template>
+                  <template v-slot:item.giocatore="{ item }">
+                    {{ giocatoreFullName(item.cod_user) }}
+                  </template>
+                  <template v-slot:item.actions="{ item, index }">
+                    <v-btn small color="primary" @click="modificaGoal(index)" class="mr-2">
+                      Modifica
+                    </v-btn>
+                    <v-btn small color="error" @click="eliminaGoal(item)">
+                      Cancella
+                    </v-btn>
+                  </template>
+                </v-data-table>
+              </div>
+            </v-card-text>
+          </v-card>
+        </v-tab-item>
+
+      </v-tabs-items>
+
+      <!-- Dialog per l'aggiunta di una partita -->
+      <v-dialog v-model="dialogAggiungiPartita" max-width="500px">
+        <v-card color="#1E1E1E" dark>
+          <v-card-title class="headline">{{ dialogTitoloPartita }}</v-card-title>
+          <v-card-text>
+            <v-select
+              label="Squadra 1"
+              v-model="partitaInModifica.cod_team1"
+              :items="squadre"
+              item-text="name"
+              item-value="id_team"
+              outlined
+              dense
+              color="white"
+            ></v-select>
+            <v-select
+              label="Squadra 2"
+              v-model="partitaInModifica.cod_team2"
+              :items="squadre"
+              item-text="name"
+              item-value="id_team"
+              outlined
+              dense
+              color="white"
+            ></v-select>
+            <v-text-field
+              label="Data"
+              v-model="partitaInModifica.date"
+              type="date"
+              outlined
+              dense
+              color="white"
+            ></v-text-field>
+            <v-text-field
+              label="Orario"
+              v-model="partitaInModifica.time"
+              type="time"
+              outlined
+              dense
+              color="white"
+            ></v-text-field>
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn text color="grey" @click="dialogAggiungiPartita = false">Annulla</v-btn>
+            <v-btn color="primary" @click="salvaNuovaPartita">Salva</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+
+      <!-- Dialog per la modifica di una partita -->
+      <v-dialog v-model="dialogModificaPartita" max-width="500px">
+        <v-card color="#1E1E1E" dark>
+          <v-card-title class="headline">{{ dialogTitoloPartita }}</v-card-title>
+          <v-card-text>
+            <v-select
+              label="Squadra 1"
+              v-model="partitaInModifica.cod_team1"
+              :items="squadre"
+              item-text="name"
+              item-value="id_team"
+              outlined
+              dense
+              color="white"
+            ></v-select>
+            <v-select
+              label="Squadra 2"
+              v-model="partitaInModifica.cod_team2"
+              :items="squadre"
+              item-text="name"
+              item-value="id_team"
+              outlined
+              dense
+              color="white"
+            ></v-select>
+            <v-text-field
+              label="Data"
+              v-model="partitaInModifica.date"
+              type="date"
+              outlined
+              dense
+              color="white"
+            ></v-text-field>
+            <v-text-field
+              label="Orario"
+              v-model="partitaInModifica.time"
+              type="time"
+              outlined
+              dense
+              color="white"
+            ></v-text-field>
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn text color="grey" @click="dialogModificaPartita = false">Annulla</v-btn>
+            <v-btn color="primary" @click="salvaModificaPartita">Salva</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+
+      <!-- Dialog per la modifica del giocatore -->
+      <v-dialog v-model="dialogModificaGiocatore" max-width="500px">
+        <v-card color="#1E1E1E" dark>
+          <v-card-title class="headline">Modifica Giocatore</v-card-title>
+          <v-card-text>
+            <v-text-field
+              label="Nome"
+              v-model="giocatoreInModifica.name"
+              outlined
+              dense
+              color="white"
+            ></v-text-field>
+            <v-text-field
+              label="Cognome"
+              v-model="giocatoreInModifica.surname"
+              outlined
+              dense
+              color="white"
+            ></v-text-field>
+            <v-select
+              label="Tipo"
+              v-model="giocatoreInModifica.type"
+              :items="tipiUtente"
+              item-text="label"
+              item-value="value"
+              outlined
+              dense
+              color="white"
+            ></v-select>
+            <v-select
+              label="Squadra"
+              v-model="giocatoreInModifica.cod_team"
+              :items="squadre"
+              item-text="name"
+              item-value="id_team"
+              outlined
+              dense
+              color="white"
+            ></v-select>
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn text color="grey" @click="dialogModificaGiocatore = false">Annulla</v-btn>
+            <v-btn color="primary" @click="salvaModificaGiocatore">Salva</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+
+      <!-- Dialog per la modifica della squadra -->
+      <v-dialog v-model="dialogModifica" max-width="500px">
+        <v-card color="#1E1E1E" dark>
+          <v-card-title class="headline">Modifica Squadra</v-card-title>
+          <v-card-text>
+            <v-text-field
+              label="Nome Squadra"
+              v-model="squadraInModifica.name"
+              outlined
+              dense
+              color="white"
+            ></v-text-field>
+            <v-select
+              label="Stato"
+              v-model="squadraInModifica.cod_actual_state"
+              :items="statiPossibili"
+              item-text="label"
+              item-value="value"
+              outlined
+              dense
+              color="white"
+            ></v-select>
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn text color="grey" @click="dialogModifica = false">Annulla</v-btn>
+            <v-btn color="primary" @click="salvaModifica">Salva</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+
+      <!-- Dialog per l'aggiunta di un giocatore -->
+
+      <v-dialog v-model="dialogAggiungiGiocatore" max-width="500px">
+          <v-card color="#1E1E1E" dark>
+              <v-card-title class="headline">Aggiungi Giocatore</v-card-title>
+              <v-card-text>
+              <v-text-field
+                  label="Nome"
+                  v-model="nuovoGiocatore.name"
+                  outlined
+                  dense
+                  color="white"
+              ></v-text-field>
+              <v-text-field
+                  label="Cognome"
+                  v-model="nuovoGiocatore.surname"
+                  outlined
+                  dense
+                  color="white"
+              ></v-text-field>
+              <v-select
+                  label="Tipo"
+                  v-model="nuovoGiocatore.type"
+                  :items="tipiUtente"
+                  item-text="label"
+                  item-value="value"
+                  outlined
+                  dense
+                  color="white"
+              ></v-select>
+              <v-select
+                  label="Squadra"
+                  v-model="nuovoGiocatore.cod_team"
+                  :items="squadre"
+                  item-text="name"
+                  item-value="id_team"
+                  outlined
+                  dense
+                  color="white"
+              ></v-select>
+              </v-card-text>
+              <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn text color="grey" @click="dialogAggiungiGiocatore = false">Annulla</v-btn>
+              <v-btn color="primary" @click="salvaNuovoGiocatore">Salva</v-btn>
+              </v-card-actions>
+          </v-card>
+      </v-dialog>
+    </v-container>
+  </v-app>
+</div>
+
+<!-- Carichiamo il tuo file app.js -->
+<script type="module" src="app.js"></script>
+
+</body>
+</html>
