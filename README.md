@@ -51,13 +51,25 @@ Il progetto include:
 ## 🧱 Struttura del progetto
 
 ```
-index.html            # Sito pubblico (visualizzazione torneo)
-dashboard.html        # Dashboard amministrativa
-/js/app.js            # Logica Vue + Vuetify
-/api/*.php        # API PHP per la gestione dei dati
-/style.css        # Stili personalizzati
-/image/              # Loghi, immagini
-/favicon/
+/api/               --> Script PHP per operazioni CRUD (API backend)
+/components/        --> Componenti JS riutilizzabili (card, tabelle, ecc.)
+/dashboard/         --> dashboard.html + eventuali risorse della dashboard
+  └── app.js
+  └── dashboard.html
+  └── /api/             
+/favicon_io/        
+/image/             --> Tutte le immagini del sito (loghi, foto squadre, ecc.)
+/templates/         --> Template fasi torneo
+
+
+styles.css
+index.html          --> Home pubblica
+app.js              --> App per sito pubblico
+favicon.ico         --> Solo uno nella root è sufficiente
+sitemap.xml         --> Per i motori di ricerca
+LICENSE             --> Licenza MIT se desideri aggiungerla
+README.md           --> Descrizione del progetto per GitHub
+
 ```
 
 ---
