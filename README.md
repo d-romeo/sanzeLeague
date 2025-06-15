@@ -65,10 +65,9 @@ Il progetto include:
 styles.css
 index.html          --> Home pubblica
 app.js              --> App per sito pubblico
-favicon.ico         --> Solo uno nella root è sufficiente
-sitemap.xml         --> Per i motori di ricerca
-LICENSE             --> Licenza MIT se desideri aggiungerla
-README.md           --> Descrizione del progetto per GitHub
+favicon.ico
+sitemap.xml         
+README.md          
 
 ```
 
