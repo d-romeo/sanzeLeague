@@ -56,7 +56,8 @@ dashboard.html        # Dashboard amministrativa
 /js/app.js            # Logica Vue + Vuetify
 /api/*.php        # API PHP per la gestione dei dati
 /style.css        # Stili personalizzati
-/image/              # Loghi, immagini, favicon
+/image/              # Loghi, immagini
+/favicon/
 ```
 
 ---
