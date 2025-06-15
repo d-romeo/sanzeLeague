@@ -97,28 +97,6 @@ README.md
 
 ---
 
-## 🔐 Autenticazione
-
-Attualmente l’accesso alla dashboard **non è protetto** (funzionalità in fase di sviluppo).
-Si consiglia di implementare un sistema di login per l'uso in produzione.
-
----
-
-## 👤 Destinatari
-
-* Tornei amatoriali o competitivi (calcio, basket, ecc.)
-* Associazioni sportive dilettantistiche
-* Scuole, università e organizzatori di eventi sportivi
-* Qualsiasi evento con partite, fasi a gironi e playoff
-
----
-
-## 📝 Licenza
-
-Questo progetto è distribuito sotto licenza **MIT**
-
----
-
 ## 📬 Contatti
 
 Per suggerimenti o segnalazioni: `danieleromeo.ele@email.com`
