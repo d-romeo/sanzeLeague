@@ -1,6 +1,6 @@
 <?php
 header('Content-Type: application/json');
-require_once '/home/u908685741/domains/rometimerror.it/public_html/sanze/api/db.php';
+include '/home/u908685741/domains/sanzeleague.com/public_html/api/db.php';
 
 // Connessione al database
 $conn = new mysqli($host, $user, $pass, $db);
@@ -30,6 +30,45 @@ switch ($action) {
 
         echo json_encode(['success' => true, 'squadre' => $squadre]);
         break;
+
+    case 'details':
+        $id_team = isset($_GET['id']) ? intval($_GET['id']) : 0;
+
+        // Prendi solo info base della squadra
+        $sql = "SELECT id_team, name, logo_path FROM team WHERE id_team = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("i", $id_team);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($row = $result->fetch_assoc()) {
+            echo json_encode(['success' => true, 'squadra' => $row]);
+        } else {
+            echo json_encode(['success' => false, 'error' => 'Squadra non trovata']);
+        }
+        break;
+
+    case 'players':
+        $id_team = isset($_GET['id']) ? intval($_GET['id']) : 0;
+
+        $sql = "SELECT u.id_user, u.name, u.surname, u.type, ut.type AS role_name
+        FROM user u
+        JOIN user_type ut ON u.type = ut.id_user_type
+        WHERE u.cod_team = ?";
+
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("i", $id_team);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        $players = [];
+        while ($row = $result->fetch_assoc()) {
+            $players[] = $row;
+        }
+
+        echo json_encode(['success' => true, 'players' => $players]);
+        break;
+
 
     case 'delete':
         // Elimina una squadra dal database

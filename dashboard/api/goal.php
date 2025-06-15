@@ -4,7 +4,7 @@ header('Content-Type: application/json; charset=utf-8');
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-require_once '/home/u908685741/domains/rometimerror.it/public_html/sanze/api/db.php';
+require_once '/home/u908685741/domains/sanzeleague.com/public_html/api/db.php';
 // Connessione al database
 $conn = new mysqli($host, $user, $pass, $db);
 
@@ -26,9 +26,10 @@ try {
 $action = $_GET['action'] ?? '';
 
 switch ($action) {
+    // Carica tutti i goal
     case 'load':
-        // Carica i goal dal database
-        $sql = "SELECT id_goal,cod_user,cod_team,cod_match FROM goal";
+        
+        $sql = "SELECT id_goal,cod_user,cod_team,cod_match,doubleScore,m.stato as stato FROM goal, matches m WHERE goal.cod_match = m.id_match";
         $result = $conn->query($sql);
 
         $goal = [];
@@ -38,36 +39,47 @@ switch ($action) {
             }
         }
         echo json_encode(['success' => true, 'goal' => $goal]);
-    break;
+        break;
 
+        // Elimina tutti i goal dal database
+    case 'deleteAll':
+        $sql = "DELETE FROM goal";
+        if ($conn->query($sql) === TRUE) {
+            echo json_encode(['success' => true]);
+        } else {
+            echo json_encode(['success' => false, 'error' => 'Errore durante l\'eliminazione: ' . $conn->error]);
+        }
+        break;
+
+        // Salva nuovo goal
     case 'save':
-        // Legge il body della richiesta POST in JSON
         $data = json_decode(file_get_contents("php://input"), true);
-
-        if (!isset($data['cod_user'], $data['cod_team'], $data['cod_match'])) {
+        if (!isset($data['cod_user'], $data['cod_team'], $data['cod_match'], $data['doubleScore'])) {
             echo json_encode(['success' => false, 'error' => 'Dati mancanti']);
             exit;
         }
-
         $cod_user = $data['cod_user'];
         $cod_team = $data['cod_team'];
         $cod_match = $data['cod_match'];
+        $doubleScore = $data['doubleScore'];
 
         if (!$pdo) {
             echo json_encode(['success' => false, 'error' => 'Errore di connessione al database']);
             exit;
         }
 
-        $stmt = $pdo->prepare("INSERT INTO goal (cod_user, cod_team, cod_match) VALUES (:cod_user, :cod_team, :cod_match)");
+        $stmt = $pdo->prepare("INSERT INTO goal (cod_user, cod_team, cod_match, doubleScore) VALUES (:cod_user, :cod_team, :cod_match, :doubleScore)");
         $stmt->execute([
             ':cod_user' => $cod_user,
             ':cod_team' => $cod_team,
-            ':cod_match' => $cod_match
+            ':cod_match' => $cod_match,
+            ':doubleScore' => $doubleScore
         ]);
 
         echo json_encode(['success' => true]);
         break;
-    
+
+        // Elimina goal
     case 'delete':
         $data = json_decode(file_get_contents('php://input'), true);
 
@@ -90,6 +102,8 @@ switch ($action) {
 
         $stmt->close();
         exit;
+        
+        // Prendi il gol da un match
     case 'get_goals_by_match':
         $data = json_decode(file_get_contents('php://input'), true);
 

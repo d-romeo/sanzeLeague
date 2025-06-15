@@ -2,6 +2,8 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
   <title>Pannello di Controllo Torneo</title>
   <link href="https://unpkg.com/vuetify@2.6.0/dist/vuetify.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/@mdi/font/css/materialdesignicons.min.css" rel="stylesheet">
@@ -43,6 +45,7 @@
       </v-row>
       <v-tabs v-model="tab" background-color="#333" dark grow>
         <v-tab>Momento Torneo</v-tab>
+        <v-tab>Live</v-tab>
         <v-tab>Squadre</v-tab>
         <v-tab>Giocatori</v-tab>
         <v-tab>Partite</v-tab>
@@ -107,7 +110,234 @@
               </v-card-text>
             </v-card>
           </template>
-          
+
+          <!-- Card gestione Playoff -->
+            <template> 
+                <v-card class="pa-4" v-if="momentoSalvato === 'playoff'">
+                <h2 class="mb-4">Definisci i Playoff</h2>
+
+                <v-container>
+                    <v-row
+                        v-for="(match, index) in playoffMatches"
+                        :key="index"
+                        class="mb-4"
+                    >
+                        <v-col cols="12">
+                        <strong>Partita {{ match.label }}</strong>
+                        </v-col>
+
+                        <v-col cols="6">
+                        <v-select
+                            :items="squadre"
+                            v-model="match.team1"
+                            item-text="name"
+                            item-value="id_team"
+                            label="Squadra 1"
+                            dense
+                            outlined
+                        />
+                        </v-col>
+
+                        <v-col cols="6">
+                        <v-select
+                            :items="squadre"
+                            v-model="match.team2"
+                            item-text="name"
+                            item-value="id_team"
+                            label="Squadra 2"
+                            dense
+                            outlined
+                        />
+                        </v-col>
+                    </v-row>
+                    </v-container>
+
+                    <v-btn color="primary" @click="generaPartite">
+                    Genera partite playoff
+                    </v-btn>
+                </v-card>
+            </template>
+
+             <!-- Card gestione Quarti -->
+            <template> 
+                <v-card class="pa-4" v-if="momentoSalvato === 'quarti'">
+                <h2 class="mb-4">Definisci i Quarti</h2>
+
+                <v-container>
+                    <v-row
+                        v-for="(match, index) in quartiMatches"
+                        :key="index"
+                        class="mb-4"
+                    >
+                        <v-col cols="12">
+                        <strong> {{ match.label }}</strong>
+                        </v-col>
+
+                        <v-col cols="6">
+                        <v-select
+                            :items="squadre"
+                            v-model="match.team1"
+                            item-text="name"
+                            item-value="id_team"
+                            label="Squadra 1"
+                            dense
+                            outlined
+                        />
+                        </v-col>
+
+                        <v-col cols="6">
+                        <v-select
+                            :items="squadre"
+                            v-model="match.team2"
+                            item-text="name"
+                            item-value="id_team"
+                            label="Squadra 2"
+                            dense
+                            outlined
+                        />
+                        </v-col>
+                    </v-row>
+                    </v-container>
+
+                    <v-btn color="primary" @click="generaPartiteQuarti">
+                    Genera partite quarti
+                    </v-btn>
+                </v-card>
+            </template>
+
+            <!-- Card gestione Semi -->
+            <template> 
+                <v-card class="pa-4" v-if="momentoSalvato === 'semi'">
+                <h2 class="mb-4">Definisci le Semifinali</h2>
+
+                <v-container>
+                    <v-row
+                        v-for="(match, index) in semifinaliMatches"
+                        :key="index"
+                        class="mb-4"
+                    >
+                        <v-col cols="12">
+                        <strong>Partita {{ match.label }}</strong>
+                        </v-col>
+
+                        <v-col cols="6">
+                        <v-select
+                            :items="squadre"
+                            v-model="match.team1"
+                            item-text="name"
+                            item-value="id_team"
+                            label="Squadra 1"
+                            dense
+                            outlined
+                        />
+                        </v-col>
+
+                        <v-col cols="6">
+                        <v-select
+                            :items="squadre"
+                            v-model="match.team2"
+                            item-text="name"
+                            item-value="id_team"
+                            label="Squadra 2"
+                            dense
+                            outlined
+                        />
+                        </v-col>
+                    </v-row>
+                    </v-container>
+
+                    <v-btn color="primary" @click="generaPartiteSemifinali">
+                    Genera partite semifinali
+                    </v-btn>
+                </v-card>
+            </template>
+
+            <!-- Card gestione Finale -->
+            <template> 
+                <v-card class="pa-4" v-if="momentoSalvato === 'finali'">
+                <h2 class="mb-4">Definisci la Finale</h2>
+
+                <v-container>
+                    <v-row
+                        v-for="(match, index) in finaleMatches"
+                        :key="index"
+                        class="mb-4"
+                    >
+                        <v-col cols="12">
+                        <strong>Partita {{ match.label }}</strong>
+                        </v-col>
+
+                        <v-col cols="6">
+                        <v-select
+                            :items="squadre"
+                            v-model="match.team1"
+                            item-text="name"
+                            item-value="id_team"
+                            label="Squadra 1"
+                            dense
+                            outlined
+                        />
+                        </v-col>
+
+                        <v-col cols="6">
+                        <v-select
+                            :items="squadre"
+                            v-model="match.team2"
+                            item-text="name"
+                            item-value="id_team"
+                            label="Squadra 2"
+                            dense
+                            outlined
+                        />
+                        </v-col>
+                    </v-row>
+                    </v-container>
+
+                    <v-btn color="primary" @click="generaPartiteFinale">
+                    Genera Finale
+                    </v-btn>
+                </v-card>
+            </template>
+        </v-tab-item>
+
+        <!-- Sezione Live -->
+        <v-tab-item>
+            <template>
+                <v-card class="pa-4">
+                    <v-card-title>Seleziona Partita Live</v-card-title>
+                    <v-card-text>
+                      <v-select
+                        v-model="selectedMatchLive"
+                        :items="matchesLive"
+                        item-text="label"
+                        item-value="id_match"
+                        label="Seleziona la partita Live"
+                        outlined
+                        dense
+                        return-object
+                      ></v-select>
+
+                      <v-btn
+                        :disabled="!selectedMatchLive"
+                        color="primary"
+                        class="mt-4"
+                        @click="goLive"
+                      >
+                        Vai in Live
+                      </v-btn>
+
+                      <!-- Riga che mostra la partita attualmente in live -->
+                      <div class="mt-4" style="color: white;">
+                        <template v-if="matchInLive">
+                          Partita attualmente in live: <strong>{{ infoMatchLive}}</strong>
+                        </template>
+                        <template v-else>
+                          Nessuna partita attualmente in live.
+                        </template>
+                      </div>
+                    </v-card-text>
+                </v-card>
+            </template>
         </v-tab-item>
 
         <!-- Sezione Squadre -->
@@ -322,6 +552,7 @@
                               class="ma-0 pa-0"
                             ></v-switch>
                         </td>
+                        <td>{{ getStatoLabel(item.stato) }}</td>
                         <td>
                           <v-btn small color="primary" @click.stop="modificaPartita(partiteFiltrate.indexOf(item))" class="mr-2">
                             Modifica
@@ -337,6 +568,12 @@
               <v-btn color="primary" @click="aggiungiPartita" class="mt-4">
                 Aggiungi Partita
               </v-btn>
+              <v-btn color="error" @click="deleteAllMatches" class="mt-4">
+                Elimina Tutte le Partite
+              </v-btn>
+              <div class="mt-4" style="color: white;">
+                Partite salvate: <strong>{{ partite.length }}</strong>
+              </div>
             </v-card-text>
           </v-card>
         </v-tab-item>
@@ -352,7 +589,7 @@
                 <v-col cols="12" sm="4">
                   <v-select
                     v-model="partitaSelezionata"
-                    :items="partite"
+                    :items="partiteFiltrate"
                     item-text="nome_partita"
                     item-value="id"
                     label="Seleziona una partita"
@@ -382,8 +619,15 @@
                     label="Seleziona il giocatore che ha segnato"
                   ></v-select>
                 </v-col>
+                <v-col cols="12" sm="4">
+                  <v-switch
+                    v-model="isDoubleGoal"
+                    label="Gol doppio"
+                    inset
+                  ></v-switch>
+                </v-col>
               </v-row>
-
+  
               <v-btn color="primary" class="mt-3" @click="salvaGoal" :disabled="!giocatoreSelezionatoPerGol">
                 Aggiungi Goal
               </v-btn>
@@ -412,6 +656,13 @@
                   <template v-slot:item.giocatore="{ item }">
                     {{ giocatoreFullName(item.cod_user) }}
                   </template>
+                  <template v-slot:item.stato="{ item }">
+                    {{ getStatoLabel(item.stato) }}
+                  </template>
+                  <template v-slot:item.doubleScore="{ item }">
+                    <span v-if="item.doubleScore == true">Sì</span>
+                    <span v-else>No</span>
+                  </template>
                   <template v-slot:item.actions="{ item, index }">
                     <v-btn small color="primary" @click="modificaGoal(index)" class="mr-2">
                       Modifica
@@ -422,10 +673,15 @@
                   </template>
                 </v-data-table>
               </div>
+              <v-btn color="error" @click="deleteAllGoals" class="mt-4">
+                Elimina Tutti i Goal
+              </v-btn>
+              <div class="mt-4" style="color: white;">
+                Goal salvati: <strong>{{ goals.length }}</strong>
+              </div>
             </v-card-text>
           </v-card>
         </v-tab-item>
-
       </v-tabs-items>
 
       <!-- Dialog per l'aggiunta di una partita -->
@@ -469,6 +725,16 @@
               dense
               color="white"
             ></v-text-field>
+            <v-select
+            label="Stato della partita"
+            v-model="partitaInModifica.stato"
+            :items="statiPossibili"
+            item-text="label"
+            item-value="value"
+            outlined
+            dense
+            color="white"
+          ></v-select>
           </v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>
@@ -519,6 +785,16 @@
               dense
               color="white"
             ></v-text-field>
+            <v-select
+              label="Stato della partita"
+              v-model="partitaInModifica.stato"
+              :items="statiPossibili"
+              item-text="label"
+              item-value="value"
+              outlined
+              dense
+              color="white"
+          ></v-select>
           </v-card-text>
           <v-card-actions>
             <v-spacer></v-spacer>

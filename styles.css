@@ -1,0 +1,217 @@
+/* Layout generale per sticky footer */
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto; /* scroll sul body */
+}
+
+body {
+  background-image: url('/image/back.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-color: #2a2100;
+}
+
+#app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  height: auto; /* lascialo auto, non 100vh */
+}
+
+.v-application {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* almeno tutta l'altezza */
+  background-color: transparent !important;
+  overflow: visible; /* lascia scroll visibile, non bloccarlo */
+}
+
+.v-application::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url('/image/back.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: -1;
+}
+
+.v-footer {
+  flex-shrink: 0;
+}
+
+/* Carousel */
+.v-carousel {
+  height: 400px;
+  overflow: hidden;
+}
+.v-carousel__item {
+  height: 100%;
+}
+.v-img {
+  height: 100%;
+  object-fit: cover;
+}
+.v-carousel__item--active {
+  margin: 0;
+  padding: 0;
+}
+
+/* Score text responsive */
+.score-text {
+  font-weight: bold;
+}
+@media (max-width: 600px) {
+  .score-text {
+    font-size: 2.5rem;
+    text-align: center;
+  }
+}
+@media (min-width: 601px) and (max-width: 960px) {
+  .score-text {
+    font-size: 3.5rem;
+  }
+}
+@media (min-width: 961px) {
+  .score-text {
+    font-size: 4rem;
+  }
+}
+
+/* Player images responsive */
+.player-img {
+  object-fit: contain;
+}
+@media (max-width: 600px) {
+  .player-img {
+    width: 60px;
+    height: 60px;
+  }
+}
+@media (min-width: 601px) and (max-width: 960px) {
+  .player-img {
+    width: 80px;
+    height: 80px;
+  }
+}
+@media (min-width: 961px) {
+  .player-img {
+    width: 100px;
+    height: 100px;
+  }
+}
+
+/* Card team style */
+.custom-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border-radius: 10px !important;
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  margin: 10px;
+  background: linear-gradient(145deg, #1e1e1e, #977511) !important;
+}
+.custom-card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+}
+.custom-card-title {
+  color: #c8c8c8 !important;
+  font-weight: bold;
+  font-size: 1.2em;
+  text-align: center;
+  padding: 16px;
+  text-transform: uppercase;
+}
+.custom-card-text {
+  padding: 16px !important;
+  text-align: center;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Testo regolamento */
+.regolamento-text {
+  white-space: normal !important;
+  word-break: break-word !important;
+}
+
+.classifica-verde {
+  border-left: 4px solid rgba(0, 255, 0, 0.4);
+}
+.classifica-arancione {
+  border-left: 4px solid rgba(255, 165, 0, 0.3);
+}
+.classifica-rossa {
+  border-left: 4px solid rgba(255, 0, 0, 0.4);
+}
+
+/* Tabellone */
+.bracket-match {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 8px;
+  margin-bottom: 32px;
+  color: white;
+  text-align: center;
+  min-height: 80px;
+  position: relative;
+}
+
+.team {
+  font-size: 14px;
+  font-weight: 500;
+}
+.vs {
+  font-size: 12px;
+  margin: 4px 0;
+  color: #888;
+}
+
+.winner-text {
+  color: #4CAF50; /* Verde */
+  /* Puoi scegliere un altro colore se preferisci, ad esempio: */
+  /* color: #FFEB3B; */ /* Giallo */
+}
+
+.border-gold {
+  border: 1px solid gold !important;
+  border-radius: 10px;
+  background-color: rgba(255, 215, 0, 0.1);
+}
+.border-silver {
+  border: 1px solid silver !important;
+  border-radius: 10px;
+  background-color: rgba(192, 192, 192, 0.1);
+}
+.border-bronze {
+  border: 1px solid #cd7f32 !important;
+  border-radius: 10px;
+  background-color: rgba(205, 127, 50, 0.1);
+}
+
+.player-image-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 70px; /* Larghezza leggermente aumentata */
+  height: 90px; /* Altezza leggermente aumentata */
+  margin-right: 10px;
+}
+
+.player-image {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+

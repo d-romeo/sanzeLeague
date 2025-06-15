@@ -13,6 +13,7 @@ new Vue({
       tab: 0,
       momentoTorneoAperto: true,
       gestioneSquadreAperta: true,
+      gestioneLiveAperta: true,
       gestioneGiocatoriAperta: true,
       gestionePartiteAperta: true,
       momentoTorneoAperto: false,
@@ -21,6 +22,7 @@ new Vue({
       goalConNomiSquadre: [],
       goalsFiltrati : [],
       temp_goal: null,
+      isDoubleGoal: false,
       goalDaEliminare:'',
       searchGiocatoreGoal: '',
       searchSquadraGoal: '',
@@ -31,6 +33,8 @@ new Vue({
         { text: "Partita", value: "partita" },
         { text: "Squadra", value: "squadra" },
         { text: "Giocatore", value: "giocatore" },
+        { text: 'Doppio?', value: 'doubleScore', align: 'center' },
+        { text: 'Stato', value: 'stato' },
         { text: "Azioni", value: "actions", sortable: false }
       ],
       goal: {
@@ -56,6 +60,7 @@ new Vue({
         { text: 'Squadra 2', value: 'squadra2' },
         { text: 'Data', value: 'date' },
         { text: 'Conclusa', value: 'ended', sortable: false },
+        { text: 'Stato', value: 'stato', sortable: false },
         { text: 'Azioni', value: 'actions', sortable: false }
       ],
       partitaInModifica: {
@@ -63,7 +68,8 @@ new Vue({
         cod_team1: null,
         cod_team2: null,
         date: null,
-        time: null
+        time: null,
+        stato: '2',
       },
 
       // dati per tab GIOCATORI
@@ -134,15 +140,72 @@ new Vue({
         { text: 'Diff. Reti', value: 'differenzaReti' },
         { text: 'Azioni', value: 'azioni', sortable: false }
       ],
-    };
+
+      // Dati per tab live
+      matchesLive:[],
+      infoMatchLive: null,
+      selectedMatchLive: null,
+      matchInLive: null, 
     
+    
+    // dati playoff
+      accoppiamenti: [
+        [3, 14],
+        [4, 13],
+        [5, 12],
+        [6, 11],
+        [7, 10],
+        [8, 9],
+      ],
+      playoffMatches: [],
+      squadrePlayoff: [],
+        partitePlayoff: [],
+        datePlayoff: [
+      '2025-06-28 20:45:00',
+      '2025-06-28 21:30:00',
+      '2025-06-28 22:15:00',
+      '2025-06-29 15:00:00',
+      '2025-06-29 15:45:00',
+      '2025-06-29 16:30:00',
+    ],
+
+
+    // dati quarti
+    squadreQuarti: [],
+    vincitoriPlayoff:[],
+    quartiMatches: [],
+    dateQuarti: [
+      '2025-06-29 17:30:00',
+      '2025-06-29 18:15:00',
+      '2025-06-29 19:00:00',
+      '2025-06-29 19:45:00',
+    ],
+
+    // dati semifinali
+    squadreSemifinali: [],
+    semifinali:[],
+    semifinaliMatches: [],
+    dateSemifinali: [
+      '2025-06-29 20:45:00',
+      '2025-06-29 21:30:00',
+    ],
+
+    // dati finale
+    squadreFinale: [],
+    finale:[],
+    finaleMatches: [],
+    dateFinale: [
+      '2025-06-29 22:30:00',
+    ],
+
+    };
   },
   methods: {
     selezionaMomento(momento) {
       this.momentoSalvato = momento;
       console.log('Momento selezionato:', momento);
 
-      fetch('/sanze/dashboard/api/dashboard.php', {
+      fetch('/dashboard/api/dashboard.php', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -152,10 +215,9 @@ new Vue({
       .then(response => response.json())
       .then(data => {
         if (data.success) {
-          console.log('Momento aggiornato nel database');
           alert("Momento aggiornato con successo!");
+           this.aggiornaValoriDB()
         } else {
-          console.error('Errore durante il salvataggio:', data.error);
           alert("Errore durante il salvataggio: " + data.error);
         }
       })
@@ -166,7 +228,7 @@ new Vue({
     },
 
     caricaMomento() {
-      fetch('/sanze/dashboard/api/dashboard.php?action=load')
+      fetch('/dashboard/api/dashboard.php?action=load')
         .then(response => response.json())
         .then(data => {
           if (data.success && data.momento) {
@@ -176,7 +238,6 @@ new Vue({
               // Fallback se il momento dal DB non è valido
               this.momentoSalvato = this.momentiTorneo[0];
             }
-            console.log('Momento caricato dal DB:', this.momentoSalvato);
           }
         })
         .catch(error => {
@@ -188,15 +249,45 @@ new Vue({
       this.caricaSquadre(); 
       this.caricaGiocatori();
       this.caricaPartite();
+      this.loadMatchesLive();
       this.caricaGoal(); 
       if (this.momentoSalvato == 'classifica'){
         this.calcolaClassifica();
       }
+      if (this.momentoSalvato == 'playoff'){
+        this.inizializzaPlayoff();
+      }
+       if (this.momentoSalvato == 'quarti'){
+        this.inizializzaQuarti();
+      }
+      if (this.momentoSalvato == 'semi'){
+        this.inizializzaSemifinali();
+      }
+      if (this.momentoSalvato == 'finale'){
+        this.inizializzaFinali();
+      }
     },
+
+    formattaData(dataStr) {
+      const data = new Date(dataStr);
+      
+      const giorni = ['dom', 'lun', 'mar', 'mer', 'gio', 'ven', 'sab'];
+      const mesi = ['gen', 'feb', 'mar', 'apr', 'mag', 'giu', 'lug', 'ago', 'set', 'ott', 'nov', 'dic'];
+
+      const giornoSettimana = giorni[data.getDay()];
+      const giorno = String(data.getDate()).padStart(2, '0');
+      const mese = mesi[data.getMonth()];
+      const ore = String(data.getHours()).padStart(2, '0');
+      const minuti = String(data.getMinutes()).padStart(2, '0');
+
+      return `🗓️ ${giornoSettimana} ${giorno} ${mese}, 🕒 ore ${ore}:${minuti}`;
+    },
+
 
     // <-- Giocarori -->
     caricaGiocatori() {
-      fetch('/sanze/dashboard/api/giocatori.php?action=load')
+      this.giocatori = [];
+      fetch('/dashboard/api/giocatori.php?action=load')
         .then(response => response.json())
         .then(data => {
           if (data.success && data.giocatori) {
@@ -222,8 +313,8 @@ new Vue({
     },
 
     eliminaGiocatore(index) {
-      const giocatoreDaEliminare = this.giocatori[index];
-      fetch('/sanze/dashboard/api/giocatori.php?action=delete', {
+      const giocatoreDaEliminare = this.giocatoriFiltrati[index];
+      fetch('/dashboard/api/giocatori.php?action=delete', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -233,29 +324,26 @@ new Vue({
       .then(response => response.json())
       .then(data => {
         if (data.success) {
-          console.log('Giocatore eliminato e salvato nel database');
-          this.giocatori.splice(index, 1);
+          this.aggiornaValoriDB();
           alert("Giocatore eliminato con successo!");
         } else {
-          console.error('Errore durante il salvataggio del giocatore:', data.error);
           alert("Errore durante l'eliminazione: " + data.error);
         }
       })
       .catch(error => {
-        console.error('Errore nella richiesta:', error);
         alert("Errore nella richiesta: " + error);
       });
     },
 
     modificaGiocatore(index) {
-      const giocatore = this.giocatori[index];
+      const giocatore = this.giocatoriFiltrati[index];
       this.giocatoreInModifica = { ...giocatore };
       this.giocatoreInModifica.index = index;
       this.dialogModificaGiocatore = true;
     },
 
     salvaModificaGiocatore() {
-      fetch('/sanze/dashboard/api/giocatori.php?action=update', {
+      fetch('/dashboard/api/giocatori.php?action=update', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -274,21 +362,19 @@ new Vue({
           const i = this.giocatoreInModifica.index;
           this.giocatori[i] = { ...this.giocatoreInModifica };
           this.dialogModificaGiocatore = false;
-          console.log('Giocatore modificato correttamente');
           alert("Giocatore modificato con successo!");
+          this.aggiornaValoriDB();
         } else {
-          console.error('Errore nella modifica:', data.error);
           alert("Errore durante la modifica: " + data.error);
         }
       })
       .catch(err => {
-        console.error('Errore di rete:', err);
         alert("Errore di rete: " + err);
       });
     },
 
     salvaNuovoGiocatore() {
-      fetch('/sanze/dashboard/api/giocatori.php?action=save', {
+      fetch('/dashboard/api/giocatori.php?action=save', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -303,18 +389,15 @@ new Vue({
       })
       .then(data => {
         if (data.success) {
-          console.log('Giocatore aggiunto e salvato nel database');
           alert("Giocatore aggiunto con successo!");
           this.dialogAggiungiGiocatore = false;
           this.nuovoGiocatore = { name: '', surname: '', cod_team: null, type: null };
           this.caricaGiocatori();
         } else {
-          console.error('Errore durante il salvataggio del giocatore:', data.error);
           alert("Errore durante l'aggiunta: " + data.error);
         }
       })
       .catch(error => {
-        console.error('Errore nella richiesta:', error);
         alert("Errore nella richiesta: " + error);
       });
     },
@@ -325,7 +408,8 @@ new Vue({
 
     // <-- Squadra -->
     caricaSquadre() {
-      fetch('/sanze/dashboard/api/squadre.php?action=load')
+      this.squadre = [];
+      fetch('/dashboard/api/squadre.php?action=load')
         .then(response => response.json())
         .then(data => {
           if (data.success && data.squadre) {
@@ -345,7 +429,7 @@ new Vue({
 
     eliminaSquadra(index) {
       const squadraDaEliminare = this.squadre[index];
-      fetch('/sanze/dashboard/api/squadre.php?action=delete', {
+      fetch('/dashboard/api/squadre.php?action=delete', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -355,16 +439,13 @@ new Vue({
       .then(response => response.json())
       .then(data => {
         if (data.success) {
-          console.log('Squadra eliminata e salvata nel database');
-          this.squadre.splice(index, 1);
+          this.aggiornaValoriDB();
           alert("Squadra eliminata con successo!");
         } else {
-          console.error('Errore durante il salvataggio della squadra:', data.error);
           alert("Errore durante l'eliminazione: " + data.error);
         }
       })
       .catch(error => {
-        console.error('Errore nella richiesta:', error);
         alert("Errore nella richiesta: " + error);
       });
     },
@@ -390,7 +471,7 @@ new Vue({
       const nuovaSquadra = { name: 'Nuova Squadra', cod_actual_state: 'default_state' };
       this.squadre.push(nuovaSquadra);
 
-      fetch('/sanze/dashboard/api/squadre.php', {
+      fetch('/dashboard/api/squadre.php', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -400,21 +481,19 @@ new Vue({
       .then(response => response.json())
       .then(data => {
         if (data.success) {
-          console.log('Squadra aggiunta e salvata nel database');
           alert("Squadra aggiunta con successo!");
+          this.aggiornaValoriDB();
         } else {
-          console.error('Errore durante il salvataggio della squadra:', data.error);
           alert("Errore durante l'aggiunta: " + data.error);
         }
       })
       .catch(error => {
-        console.error('Errore nella richiesta:', error);
         alert("Errore nella richiesta: " + error);
       });
     },
 
     salvaModifica() {
-      fetch('/sanze/dashboard/api/squadre.php?action=update', {
+      fetch('/dashboard/api/squadre.php?action=update', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -431,15 +510,13 @@ new Vue({
           const i = this.squadraInModifica.index;
           this.squadre[i] = { ...this.squadraInModifica };
           this.dialogModifica = false;
-          console.log('Squadra modificata correttamente');
           alert("Squadra modificata con successo!");
+          this.aggiornaValoriDB();
         } else {
-          console.error('Errore nella modifica:', data.error);
           alert("Errore durante la modifica: " + data.error);
         }
       })
       .catch(err => {
-        console.error('Errore di rete:', err);
         alert("Errore di rete: " + err);
       });
     },
@@ -476,10 +553,11 @@ new Vue({
       const payload = {
         cod_team1: this.partitaInModifica.cod_team1,
         cod_team2: this.partitaInModifica.cod_team2,
-        date: dateTime
+        date: dateTime,
+        stato: this.partitaInModifica.stato,
       };
 
-      fetch('/sanze/dashboard/api/partite.php?action=save', {
+      fetch('/dashboard/api/partite.php?action=save', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -489,17 +567,14 @@ new Vue({
       .then(response => response.json())
       .then(data => {
         if (data.success) {
-          console.log('Nuova partita salvata nel database');
           alert("Partita aggiunta con successo!");
           this.dialogAggiungiPartita = false;
           this.aggiornaValoriDB(); 
         } else {
-          console.error('Errore durante il salvataggio della nuova partita:', data.error);
           alert("Errore durante il salvataggio: " + data.error);
         }
       })
       .catch(error => {
-        console.error('Errore nella richiesta:', error);
         alert("Errore nella richiesta: " + error);
       });
     },
@@ -524,10 +599,11 @@ new Vue({
         id_match: this.partitaInModifica.id_match,
         cod_team1: this.partitaInModifica.cod_team1,
         cod_team2: this.partitaInModifica.cod_team2,
-        date: dateTime
+        date: dateTime,
+        stato: this.partitaInModifica.stato,
       };
 
-      fetch('/sanze/dashboard/api/partite.php?action=update', {
+      fetch('/dashboard/api/partite.php?action=update', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -537,23 +613,21 @@ new Vue({
       .then(response => response.json())
       .then(data => {
         if (data.success) {
-          console.log('Partita modificata nel database');
           alert("Partita modificata con successo!");
           this.dialogModificaPartita = false;
-          this.caricaPartite(); // Ricarica le partite per aggiornare la lista
+          this.aggiornaValoriDB(); // Ricarica le partite per aggiornare la lista
         } else {
-          console.error('Errore durante la modifica della partita:', data.error);
           alert("Errore durante la modifica: " + data.error);
         }
       })
       .catch(error => {
-        console.error('Errore nella richiesta:', error);
         alert("Errore nella richiesta: " + error);
       });
     },
 
     caricaPartite() {
-      fetch('/sanze/dashboard/api/partite.php?action=load')
+      this.partite = [];  
+      fetch('/dashboard/api/partite.php?action=load')
         .then(response => response.json())
         .then(data => {
           if (data.success && data.partite) {
@@ -574,18 +648,28 @@ new Vue({
           }
         })
         .catch(error => {
-          console.error('Errore nel caricamento delle partite:', error);
+          alert('Errore nel caricamento delle partite:' + error);
         });
     },
 
     filtraPartite() {
-      this.partiteFiltrate = this.partite.filter(partita => {
+        const mapValueToLabel = {};
+        this.statiPossibili.forEach(s => {
+        mapValueToLabel[s.value] = s.label.toLowerCase();
+        });
+
+        // Nel filtro:
+        this.partiteFiltrate = this.partite.filter(partita => {
         const squadra1 = this.getNomeSquadra(partita.cod_team1).toLowerCase();
         const squadra2 = this.getNomeSquadra(partita.cod_team2).toLowerCase();
         const searchMatch = squadra1.includes(this.searchQueryPartite.toLowerCase()) ||
-                           squadra2.includes(this.searchQueryPartite.toLowerCase());
-        return searchMatch;
-      });
+                            squadra2.includes(this.searchQueryPartite.toLowerCase());
+
+        // Confronto lo stato mappato con momentoSalvato (tutti in minuscolo)
+        const matchStato = mapValueToLabel[parseInt(partita.stato)] === this.momentoSalvato.toLowerCase();
+
+        return searchMatch && matchStato;
+        });
     },
 
     getTipoUtente(typeId) {
@@ -594,10 +678,9 @@ new Vue({
     },
 
     eliminaPartita(index) {
-        const partitaDaEliminare = this.partite[index];
-
+        const partitaDaEliminare = this.partiteFiltrate[index];
         // Prima recupera gli ID dei gol associati alla partita
-        fetch('/sanze/dashboard/api/goal.php?action=get_goals_by_match', {
+        fetch('/dashboard/api/goal.php?action=get_goals_by_match', {
             method: 'POST',
             headers: {
             'Content-Type': 'application/json'
@@ -609,7 +692,7 @@ new Vue({
             if (data.success && data.goals && data.goals.length > 0) {
             // Elimina ogni gol uno per uno
             const deletePromises = data.goals.map(goal =>
-                fetch('/sanze/dashboard/api/goal.php?action=delete', {
+                fetch('/dashboard/api/goal.php?action=delete', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -620,13 +703,12 @@ new Vue({
 
             return Promise.all(deletePromises);
             } else {
-            console.log('Nessun gol associato trovato, procedo con l\'eliminazione della partita');
             return Promise.resolve();
             }
         })
         .then(() => {
             // Poi elimina la partita
-            return fetch('/sanze/dashboard/api/partite.php?action=delete', {
+            return fetch('/dashboard/api/partite.php?action=delete', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -637,17 +719,13 @@ new Vue({
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-            console.log('Partita eliminata con successo');
-            this.partite.splice(index, 1);
             this.aggiornaValoriDB();
             alert("Partita eliminata con successo!");
             } else {
-            console.error('Errore durante eliminazione partita!', data.error);
             alert("Errore durante l'eliminazione della partita: " + data.error);
             }
         })
         .catch(error => {
-            console.error('Errore nella richiesta:', error);
             alert("Errore nella richiesta: " + error);
         });
     },
@@ -658,7 +736,7 @@ new Vue({
         ended: item.ended ? 1 : 0,
       };
       console.log('Payload per aggiornamento ended:', payload);
-      fetch('/sanze/dashboard/api/partite.php?action=updateEnded', {
+      fetch('/dashboard/api/partite.php?action=updateEnded', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -668,16 +746,39 @@ new Vue({
       .then(response => response.json())
       .then(data => {
         if (data.success) {
-          console.log('Stato ended aggiornato correttamente');
           alert("Stato partita aggiornato con successo!"); 
           this.aggiornaValoriDB(); 
         } else {
-          console.error('Errore nel salvataggio:', data.message);
+          alert("'Errore nel salvataggio:', data.message"); 
         }
       })
       .catch(error => {
-        console.error('Errore nella richiesta:', error);
+        alert('Errore nella richiesta:', error);
       });
+    },
+
+    deleteAllMatches(){
+      if (!confirm("Sei sicuro di voler eliminare **tutte** le partite e i goal associati?")) {
+          return;
+        }
+        fetch('/dashboard/api/partite.php?action=deleteAll', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            alert("Eliminazione completata con successo!");
+            this.aggiornaValoriDB(); 
+          } else {
+            alert("Errore durante l'eliminazione: " + data.error);
+          }
+        })
+        .catch(error => {
+          alert("Errore nella comunicazione con il server." + data.error);
+        });
     },
 
 
@@ -690,7 +791,7 @@ new Vue({
         return;
       }
 
-      fetch('/sanze/dashboard/api/goal.php?action=delete', {
+      fetch('/dashboard/api/goal.php?action=delete', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -701,19 +802,15 @@ new Vue({
         .then(data => {
           if (data.success) {
             console.log('Goal eliminato dal DB');
-
             // Rimuovilo da goals
             this.goals = this.goals.filter(g => g.id_goal !== goal.id_goal);
-
             alert("Goal eliminato con successo!");
             this.aggiornaValoriDB();
           } else {
-            console.error('Errore durante l\'eliminazione:', data.error);
             alert("Errore durante l'eliminazione: " + data.error);
           }
         })
         .catch(error => {
-          console.error('Errore nella richiesta:', error);
           alert("Errore nella richiesta: " + error);
         });
     },
@@ -729,18 +826,17 @@ new Vue({
           ...g,
           nomeCompleto: `${g.name} ${g.surname}`
         }));
-
-      console.log("Giocatori per goal:", this.giocatoriPerGol);
     },
 
     salvaGoal() {
       const payload = {
         cod_match: this.partitaSelezionata.id_match,
         cod_team: this.squadraSelezionata,
-        cod_user: this.giocatoreSelezionatoPerGol
+        cod_user: this.giocatoreSelezionatoPerGol,
+        doubleScore: this.isDoubleGoal ? 1 : 0  
       };
 
-      fetch('/sanze/dashboard/api/goal.php?action=save', {
+      fetch('/dashboard/api/goal.php?action=save', {
         method: 'POST',
         body: JSON.stringify(payload),
         headers: {
@@ -752,7 +848,8 @@ new Vue({
           if (data.success) {
             console.log("Gol salvato!");
             alert("Gol salvato con successo!");
-            this.aggiornaValoriDB()
+            this.aggiornaValoriDB();
+            this.isDoubleGoal = false; // reset switch
           } else {
             alert("Errore durante il salvataggio: " + data.error);
           }
@@ -760,7 +857,10 @@ new Vue({
     },
 
     caricaGoal() {
-      fetch('/sanze/dashboard/api/goal.php?action=load')
+      this.goalConNomiSquadre = [];
+      this.goalsFiltrati = [];
+      this.goals = [];
+      fetch('/dashboard/api/goal.php?action=load')
         .then(response => response.json())
         .then(data => {
           if (data.success && data.goal) {
@@ -779,29 +879,36 @@ new Vue({
             });
 
             this.goalConNomiSquadre = goalConNomi;
-            this.goalsFiltrati = goalConNomi;
+            this.goalsFiltrati =  goalConNomi; // Inizializza goalsFiltrati con tutti i goal caricati
             this.goals = goalConNomi; 
+            this.filtraPartitePerGoal(); // Applica il filtro iniziale
             console.log('Gol caricati dal DB:', this.goalConNomiSquadre);
           }
         })
         .catch(error => {
-          console.error('Errore nel caricamento dei goal:', error);
+          alert('Errore nel caricamento dei goal:'+ error);
         });
     },
 
     filtraPartitePerGoal() {
-      const searchGiocatoreGoal = this.searchGiocatoreGoal.toLowerCase();
-      const searchSquadraGoal = this.searchSquadraGoal.toLowerCase();
+        const searchGiocatoreGoal = this.searchGiocatoreGoal.toLowerCase();
+        const searchSquadraGoal = this.searchSquadraGoal.toLowerCase();
 
-      this.goalsFiltrati = this.goalConNomiSquadre.filter(goal => {
+        // Trova il valore numerico corrispondente al momentoSalvato
+        const statoCorrispondente = this.statiPossibili.find(
+        s => s.label.toLowerCase() === this.momentoSalvato.toLowerCase()
+        )?.value;
+
+        this.goalsFiltrati = this.goalConNomiSquadre.filter(goal => {
         const nomeGiocatore = this.giocatoreFullName(goal.cod_user).toLowerCase();
         const nomeSquadra = this.getNomeSquadra(goal.cod_team).toLowerCase();
 
         const matchGiocatore = !searchGiocatoreGoal || nomeGiocatore.includes(searchGiocatoreGoal);
         const matchSquadra = !searchSquadraGoal || nomeSquadra.includes(searchSquadraGoal);
+        const matchStato = statoCorrispondente === undefined || parseInt(goal.stato) === statoCorrispondente;
 
-        return matchGiocatore && matchSquadra;
-      });
+        return matchGiocatore && matchSquadra && matchStato;
+        });
     },
 
     descrizionePartitaById(id_match){
@@ -811,9 +918,55 @@ new Vue({
       return `${nome1} - ${nome2}`;
     }, 
 
+    getStatoLabel(value) {
+        const stato = this.statiPossibili.find(s => s.value === parseInt(value));
+        return stato ? stato.label : 'Sconosciuto';
+    },
+
+    deleteAllGoals(){
+      if (!confirm("Sei sicuro di voler eliminare **tutti** i goal?")) {
+          return;
+        }
+
+        fetch('/dashboard/api/goal.php?action=deleteAll', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            console.log('Tutti i goal sono stati eliminati.');
+            alert("Eliminazione completata con successo!");
+            this.aggiornaValoriDB(); 
+          } else {
+            alert("Errore durante l'eliminazione: " + data.error);
+          }
+        })
+        .catch(error => {
+          alert("Errore nella comunicazione con il server" + data.error);
+        });
+    },
+
     // <-- CLASSIFICA -->
+    caricaClassifica() {
+      this.classificaFinale = [];
+      fetch('/dashboard/api/classifica.php?action=load')
+        .then(response => response.json())
+        .then(data => {
+          if (data.success && data.classifica) {
+            this.classificaFinale = data.classifica;
+          }
+        })
+        .catch(error => {
+          alert('Errore nel caricamento della classifica:'+ error);
+        });
+    },
+
     caricaPunti(){
-      fetch('/sanze/dashboard/api/punti.php?action=load')
+      this.score = [];
+      fetch('/dashboard/api/punti.php?action=load')
         .then(response => response.json())
         .then(data => {
           if (data.success && data.score) {
@@ -822,7 +975,7 @@ new Vue({
           }
         })
         .catch(error => {
-          console.error('Errore nel caricamento dei punti', error);
+          alert('Errore nel caricamento dei punti' + error);
         });
     },
 
@@ -830,12 +983,6 @@ new Vue({
       this.caricaPunti();
 
       setTimeout(() => {
-        console.log('Calcolando la classifica...');
-        console.log('Goals:', this.goals);
-        console.log('Partite:', this.partite);
-        console.log('Squadre:', this.squadre);
-        console.log('Punti extra:', this.score);
-
         const classifica = {};
 
         // Inizializza la classifica con tutte le squadre
@@ -850,16 +997,25 @@ new Vue({
           };
         });
 
+          // Verifica se nessuna partita è stata conclusa
+        const nessunaPartitaConclusa = this.partite.every(partita => !partita.ended)
+
         // Calcola i punti dalle partite solo se sono concluse (ended === true)
         this.partite.forEach(partita => {
           if (partita.ended !== true) {
-            console.log(`Partita non conclusa: ${partita.nome_partita} (ID: ${partita.id_match})`);
             return;
           }
 
           const goalPartita = this.goals.filter(goal => goal.cod_match === partita.id_match);
-          const goalSquadra1 = goalPartita.filter(goal => goal.cod_team === partita.cod_team1).length;
-          const goalSquadra2 = goalPartita.filter(goal => goal.cod_team === partita.cod_team2).length;
+
+          // Somma dei goal considerando doubleScore
+          const goalSquadra1 = goalPartita
+            .filter(goal => goal.cod_team === partita.cod_team1)
+            .reduce((sum, goal) => sum + (goal.doubleScore == 1 ? 2 : 1), 0);
+
+          const goalSquadra2 = goalPartita
+            .filter(goal => goal.cod_team === partita.cod_team2)
+            .reduce((sum, goal) => sum + (goal.doubleScore == 1 ? 2 : 1), 0);
 
           // Aggiorna goal fatti/subiti
           classifica[partita.cod_team1].goalFatti += goalSquadra1;
@@ -890,69 +1046,445 @@ new Vue({
         });
 
         // Calcola classifica finale
+    
         this.classificaFinale = Object.values(classifica)
-          .map(item => ({
+        .map(item => ({
             ...item,
             differenzaReti: item.goalFatti - item.goalSubiti
-          }))
-          .sort((a, b) => {
+        }))
+        .sort((a, b) => {
+            if (nessunaPartitaConclusa) {
+            // Ordina per nome se nessuna partita è stata conclusa
+            return a.nome.localeCompare(b.nome);
+            } else {
+            // Altrimenti, usa la logica di ordinamento standard
             if (b.punti !== a.punti) return b.punti - a.punti;
-
             const diffA = a.differenzaReti;
             const diffB = b.differenzaReti;
             if (diffB !== diffA) return diffB - diffA;
-
             if (b.vittorie !== a.vittorie) return b.vittorie - a.vittorie;
-
-            return b.goalFatti - a.goalFatti; // fallback: più goal fatti
-          });
+            return b.goalFatti - a.goalFatti;
+            }
+        });
+          
+          this.classificaFinale.forEach((squadra, index) => { squadra.id_rank = index + 1;}); 
+          this.salvaClassificaSuDB();
       }, 1000);
+    },
+
+    salvaClassificaSuDB() {
+      if (!this.classificaFinale || this.classificaFinale.length === 0) {
+        alert("Classifica vuota, niente da salvare.");
+        return;
+      }
+
+      // Prepara solo i campi necessari da inviare (opzionale ma consigliato)
+      const payloadClassifica = this.classificaFinale.map((squadra, index) => ({
+        id_rank: index + 1,       // posizione in classifica
+        id_team: squadra.id_team,
+        punti: squadra.punti,
+        nome: squadra.nome,
+        gol_fatti: squadra.goalFatti,
+        gol_subiti: squadra.goalSubiti,
+        df_reti: squadra.differenzaReti
+      }));
+
+      fetch('/dashboard/api/classifica.php?action=save', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ classifica: payloadClassifica })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          alert("Classifica salvata con successo!");
+        } else {
+          alert("Errore durante il salvataggio della classifica: " + data.error);
+        }
+      })
+      .catch(error => {
+        alert("Errore nella richiesta: " + error);
+      });
     },
 
     aggiungiPunto(item) {
       console.log(`id_team ${item.id_team}`);
-      fetch(`/sanze/dashboard/api/punti.php?action=add&id_team=${item.id_team}`)
+      fetch(`/dashboard/api/punti.php?action=add&id_team=${item.id_team}`)
         .then(response => response.json())
         .then(data => {
           if (data.success) {
-            console.log(`Punto aggiunto a squadra ${item.nome}`);
             this.calcolaClassifica(); // Ricalcola la classifica dopo l'aggiunta del punto
           } else {
-            console.error('Errore nell\'aggiunta punto:', data.error);
+            alert('Errore nell\'aggiunta punto:' + data.error);
           }
         })
         .catch(error => {
-          console.error('Errore nel fetch aggiunta punto:', error);
+          alert('Errore nel fetch aggiunta punto:' + error);
         });
     },
 
     togliPunto(item) {
-      fetch(`/sanze/dashboard/api/punti.php?action=min&id_team=${item.id_team}`)
+      fetch(`/dashboard/api/punti.php?action=min&id_team=${item.id_team}`)
         .then(response => response.json())
         .then(data => {
           if (data.success) {
-            console.log(`Punto rimosso da squadra ${item.nome}`);
             this.calcolaClassifica(); 
           } else {
-            console.error('Errore nella rimozione punto:', data.error);
+            alert('Errore nella rimozione punto:'+ data.error);
           }
         })
         .catch(error => {
-          console.error('Errore nel fetch rimozione punto:', error);
+          alert('Errore nel fetch rimozione punto:' + error);
         });
     },
 
-  },
+    // <-- Live Matches -->
+    loadMatchesLive() {
+        this.matchesLive = [];
+        fetch('/dashboard/api/live.php?action=loadMatchesLive')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+            this.matchesLive = data.matches.map(m => ({
+                ...m,
+                label: `${m.team1_name} vs ${m.team2_name} - ${new Date(m.date).toLocaleString()} - ${this.getStatoLabel(m.stato)}`,
+            }));
+             const statoCorrispondente = this.statiPossibili.find(
+                s => s.label.toLowerCase() === this.momentoSalvato.toLowerCase()
+            )?.value;
+
+            if (statoCorrispondente !== undefined) {
+                this.matchesLive = this.matchesLive.filter(
+                m => parseInt(m.stato) === statoCorrispondente
+                );
+                this.loadInfoLive();
+            }
+            } else {
+            alert('Errore caricamento partite live');
+            }
+        })
+        .catch(error => {
+            alert('Errore di rete'+ error);
+        });
+    },
+
+    goLive() {
+        if (!this.selectedMatchLive) return;
+        fetch('/dashboard/api/live.php?action=setLiveMatch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id_match: this.selectedMatchLive.id_match })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+            alert('Partita impostata in live');
+            this.matchInLive = true;
+            this.loadInfoLive(); // Ricarica le informazioni della partita live
+            } else {
+              this.matchInLive = false;
+            alert('Errore nel settare partita live: ' + (data.error || ''));
+            }
+        })
+        .catch(error => {
+            alert('Errore di rete' + error);
+        });
+    },
+
+    loadInfoLive() {
+        this.infoMatchLive = '';
+        fetch('/dashboard/api/live.php?action=getMatchInfo')
+          .then(res => res.json())
+          .then(data => {
+            if (data.success && Array.isArray(data.matches) && data.matches.length > 0) {
+              const data1 = data.matches[0]; // prima (e unica) partita live
+              this.infoMatchLive = `${data1.team1_name} vs ${data1.team2_name} - ${new Date(data1.date).toLocaleString()} - ${this.getStatoLabel(data1.stato)}`;
+              this.matchInLive = true;
+            } else {
+              this.infoMatchLive = 'Nessuna partita attualmente in live.';
+              this.matchInLive = false;
+            }
+          })
+          .catch(error => {
+            alert('Errore nel recupero dei dati info live:' + error);
+            this.infoMatchLive = 'Errore nel recupero delle partite.';
+          });
+    },
+
+    //<-- Playoff -->
+    generaPartite() {
+      const partitePlayoff = this.playoffMatches.map((p, i) => ({
+        cod_team1: p.team1,
+        cod_team2: p.team2,
+        stato: '3',            
+        ended: '0',           
+        date: this.datePlayoff[i], 
+        }));
+      fetch('/dashboard/api/partite.php?action=savePlayoff', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ partite: partitePlayoff })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          alert("Partite salvate con successo!");
+          this.aggiornaValoriDB(); // Ricarica le partite per aggiornare la lista
+        } else {
+          alert("Errore durante il salvataggio della partite: " + data.error);
+        }
+      })
+      .catch(error => {
+        alert("Errore nella richiesta: " + error);
+      });
+    },
+
+    inizializzaPlayoff() {
+      this.squadrePlayoff = this.classificaFinale.filter(s => s.id_rank >= 3 && s.id_rank <= 14);
+        this.playoffMatches = this.accoppiamenti.map(([pos1, pos2]) => {
+        const team1 = this.classificaFinale.find(s => Number(s.id_rank) === pos1);
+        const team2 = this.classificaFinale.find(s => Number(s.id_rank) === pos2);
+
+        return {
+          label: `${pos1} vs ${pos2}`,
+          team1: team1 ? team1.id_team : null,
+          team2: team2 ? team2.id_team : null,
+        };
+      });
+    },
+
+    //<-- Quarti -->
+  
+    getVincitoriPlayoff() {
+    return this.vincitoriPlayoff
+        .filter(p => p.ended == 1 && p.stato == 3) 
+        .sort((a, b) => a.id_match - b.id_match)   
+        .map(p => {
+            const score1 = this.getScore(p.id_match, p.cod_team1);
+            const score2 = this.getScore(p.id_match, p.cod_team2);
+            return score1 > score2
+                ? this.squadre.find(t => t.id_team === p.cod_team1)
+                : this.squadre.find(t => t.id_team === p.cod_team2);
+        });
+    },
+
+    getScore(matchId, teamId) {
+        const goalsMatch = this.goals.filter(g => g.cod_match === matchId);
+        return goalsMatch
+            .filter(g => g.cod_team === teamId)
+            .reduce((score, g) => score + (g.doubleScore == 1 ? 2 : 1), 0);
+    },
+
+    inizializzaQuarti() {
+        this.vincitoriPlayoff = this.partite;  
+        const vincitoriPlayoff = this.getVincitoriPlayoff();
+        const squadreDirette = this.classificaFinale.filter(s => s.id_rank <= 2);
+        this.squadreQuarti = [
+            ...vincitoriPlayoff.map(s => ({
+                ...s,
+                name: s.name || s.nome || 'Senza nome'
+            })),
+            ...squadreDirette.map(s => ({
+                ...s,
+                name: s.name || s.nome || 'Senza nome'
+            }))
+            ];
+        // Crea gli accoppiamenti per i quarti di finale
+        this.quartiMatches = [
+            { team1: vincitoriPlayoff[0], team2: vincitoriPlayoff[1], label: `Prima Partita - ${this.formattaData(this.dateQuarti[0])} - Vincitrice 3-14 vs 4-13`}, // vincitori partite 1 e 2
+            { team1: vincitoriPlayoff[2], team2: vincitoriPlayoff[3], label: `Seconda Partita - ${this.formattaData(this.dateQuarti[1])} - Vincitrice 5-12 vs 6-11`}, // vincitori partite 3 e 4
+            { team1: vincitoriPlayoff[4], team2: squadreDirette[1], label: `Terza Partita - ${this.formattaData(this.dateQuarti[2])} - 2° Classificata vs Vincitrice 7-10` }, // vincitore partita 5 vs seconda classificata
+            { team1: vincitoriPlayoff[5], team2: squadreDirette[0], label: `Quarta Partita - ${this.formattaData(this.dateQuarti[3])} - 1° Classificata vs Vincitrice 8-9`}  // vincitore partita 6 vs prima classificata
+        ];
+    },
+
+    generaPartiteQuarti() {
+      const partiteQuarti = this.quartiMatches.map((p, i) => ({
+        cod_team1: p.team1.id_team,
+        cod_team2: p.team2.id_team,
+        stato: '4',            // playoffS
+        ended: '0',            // ancora da giocare
+        date: this.dateQuarti[i], // assegna data corrispondente
+        }));
+
+      fetch('/dashboard/api/partite.php?action=saveQuarti', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ partite: partiteQuarti })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          alert("Partite salvate con successo!");
+          this.aggiornaValoriDB(); 
+        } else {
+          alert("Errore durante il salvataggio della partite: " + data.error);
+        }
+      })
+      .catch(error => {
+        alert("Errore nella richiesta: " + error);
+      });
+    },
+
+    //<-- Semifinali -->
+  
+    getVincitoriSemifinali() {
+    return this.vincitoriSemifinali
+        .filter(p => p.ended == 1 && p.stato == 4) 
+        .sort((a, b) => a.id_match - b.id_match)   
+        .map(p => {
+            const score1 = this.getScore(p.id_match, p.cod_team1);
+            const score2 = this.getScore(p.id_match, p.cod_team2);
+            return score1 > score2
+                ? this.squadre.find(t => t.id_team === p.cod_team1)
+                : this.squadre.find(t => t.id_team === p.cod_team2);
+        });
+    },
+
+    getScore(matchId, teamId) {
+        const goalsMatch = this.goals.filter(g => g.cod_match === matchId);
+        return goalsMatch
+            .filter(g => g.cod_team === teamId)
+            .reduce((score, g) => score + (g.doubleScore == 1 ? 2 : 1), 0);
+    },
+
+    inizializzaSemifinali() {
+        this.vincitoriSemifinali = this.partite;  
+        const vincitoriSemifinali = this.getVincitoriSemifinali();
+        this.squadreSemifinali = vincitoriSemifinali;
+        
+        this.semifinaliMatches = [
+            { team1: vincitoriSemifinali[0], team2: vincitoriSemifinali[1],  label: `Prima Partita - ${this.formattaData(this.dateSemifinali[0])} - Vincitrice Prima Quarti vs Seconda Quarti` }, // vincitori partite 1 e 2
+            { team1: vincitoriSemifinali[2], team2: vincitoriSemifinali[3], label: `Seconda Partita - ${this.formattaData(this.dateSemifinali[1])} - Vincitrice Terza Quarti vs Quarta Quarti` }, // vincitori partite 3 e 4
+        ];
+    },
+
+    generaPartiteSemifinali() {
+      const partiteSemifinali = this.semifinaliMatches.map((p, i) => ({
+        cod_team1: p.team1.id_team,
+        cod_team2: p.team2.id_team,
+        stato: '5',           
+        ended: '0',            
+        date: this.dateSemifinali[i],
+
+        }));
+      fetch('/dashboard/api/partite.php?action=saveSemifinali', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ partite: partiteSemifinali })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          alert("Partite salvate con successo!");
+            this.aggiornaValoriDB(); // Ricarica le partite per aggiornare la lista
+        } else {
+          alert("Errore durante il salvataggio della partite: " + data.error);
+        }
+      })
+      .catch(error => {
+        alert("Errore nella richiesta: " + error);
+      });
+    },
+
+    //<-- Finali -->
+  
+    getVincitoriFinale() {
+    return this.vincitoriFinale
+        .filter(p => p.ended == 1 && p.stato == 5)
+        .sort((a, b) => a.id_match - b.id_match)  
+        .map(p => {
+            const score1 = this.getScore(p.id_match, p.cod_team1);
+            const score2 = this.getScore(p.id_match, p.cod_team2);
+            return score1 > score2
+                ? this.squadre.find(t => t.id_team === p.cod_team1)
+                : this.squadre.find(t => t.id_team === p.cod_team2);
+        });
+    },
+
+    getScore(matchId, teamId) {
+        const goalsMatch = this.goals.filter(g => g.cod_match === matchId);
+        return goalsMatch
+            .filter(g => g.cod_team === teamId)
+            .reduce((score, g) => score + (g.doubleScore == 1 ? 2 : 1), 0);
+    },
+
+    inizializzaFinale() {
+        this.vincitoriFinale = this.partite;  
+        const vincitoriFinale = this.getVincitoriFinale();
+        this.squadreFinale = vincitoriFinale;
+
+        console.log("Vincitori Finale:", this.squadreFinale);
+        this.finaleMatches = [
+            { team1: vincitoriFinale[0], team2: vincitoriFinale[1], label: `Finale delle - ${this.formattaData(this.dateFinale[0])} - Vincitrice Prima Semifinali vs Seconda Semifinali` }, // vincitori partite 1 e 2
+        ];
+    },
+
+    generaPartiteFinale() {
+      const partiteFinale = this.finaleMatches.map((p, i) => ({
+        cod_team1: p.team1.id_team,
+        cod_team2: p.team2.id_team,
+        stato: '6',           
+        ended: '0',            
+        date: this.dateFinale[i], 
+        }));
+      fetch('/dashboard/api/partite.php?action=saveFinale', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ partite: partiteFinale })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {  
+          alert("Partite salvate con successo!");
+          this.aggiornaValoriDB(); // Ricarica le partite per aggiornare la lista
+        } else {
+          alert("Errore durante il salvataggio della partite: " + data.error);
+        }
+      })
+      .catch(error => {
+        alert("Errore nella richiesta: " + error);
+      });
+    },
+
+},
+
   created() {
     this.caricaMomento(),
     this.caricaSquadre(),
     this.caricaGiocatori(),
     this.caricaPartite(),
-    this.caricaGoal()
-    this.caricaPunti();
+    this.loadMatchesLive(),
+    this.caricaGoal(),
+    this.caricaPunti(),
+    this.caricaClassifica(),
     setTimeout(() => {
-      this.calcolaClassifica();
-    }, 2000);
+    if (this.momentoSalvato === 'classifica'){this.calcolaClassifica()}
+    }, 500),
+    setTimeout(() => {
+        if (this.momentoSalvato === 'playoff') {this.inizializzaPlayoff()}
+      }, 500),
+    setTimeout(() => {
+        if (this.momentoSalvato === 'quarti') {this.inizializzaQuarti()}
+      }, 500);
+    setTimeout(() => {
+        if (this.momentoSalvato === 'semi') {this.inizializzaSemifinali()}
+      }, 500);
+    setTimeout(() => {
+        if (this.momentoSalvato === 'finali') {this.inizializzaFinale()}
+      }, 500);
+    
+    
   },
   watch: {
     squadraSelezionata(nuovoId) {

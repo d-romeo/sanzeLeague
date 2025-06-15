@@ -3,7 +3,7 @@
 header('Content-Type: application/json');
 
 // Include il file per la connessione al database
-include '/home/u908685741/domains/rometimerror.it/public_html/sanze/api/db.php';
+include '/home/u908685741/domains/sanzeleague.com/public_html/api/db.php';
 
 try {
     // Crea una connessione PDO

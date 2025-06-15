@@ -1,88 +1,186 @@
 export default {
     template: `
+<div id="app" style="display: flex; flex-direction: column; min-height: 100vh;">
 <v-app>
     <v-main>
         <v-container>
-            <v-row justify="center">
-                <v-col cols="12">
-                    <!-- Pulsante di Ritorno -->
-                    <v-btn color="primary" @click="goBack" class="mb-4">
-                        <v-icon left>mdi-arrow-left</v-icon>
-                        BACK
-                    </v-btn>
+    <v-row justify="center">
+        <v-col cols="12">
+            <!-- Pulsante di Ritorno -->
+            <v-btn color="primary" @click="goBack" class="mb-4">
+                <v-icon left>mdi-arrow-left</v-icon>
+                BACK
+            </v-btn>
 
-                    <v-card v-for="(regola, index) in regolamento" :key="index" class="mb-4 " color="rgba(0, 0, 0, 0.7)" dark>
-                        <v-card-title class="custom-title justify-center">{{ regola.titolo }}</v-card-title>
-                        <v-list dark>
-                            <v-list-item>
-                                <v-list-item-content>
-                                    <v-list-item-subtitle class="text-center regolamento-text">{{ regola.descrizione }}</v-list-item-subtitle>
-                                </v-list-item-content>
-                            </v-list-item>
-                        </v-list>
-                    </v-card>
-                </v-col>
-            </v-row>
-        </v-container>
+            <!-- Regola 1 -->
+            <v-card class="mb-4" color="rgba(0, 0, 0, 0.7)" dark>
+                <v-card-title class="custom-title justify-center">Formato del Torneo</v-card-title>
+                <v-list dark>
+                    <v-list-item>
+                        <v-list-item-content>
+                            <v-list-item-subtitle class="text-center regolamento-text">
+                                Il torneo è composto da 16 squadre, ciascuna con:<br>- 7 giocatori almeno<br>- 1 presidente<br>- 1 allenatore<br><br>Girone unico composto da 16 squadre.
+                            </v-list-item-subtitle>
+                        </v-list-item-content>
+                    </v-list-item>
+                </v-list>
+            </v-card>
+
+            <!-- Regola 2 -->
+            <v-card class="mb-4" color="rgba(0, 0, 0, 0.7)" dark>
+                <v-card-title class="custom-title justify-center">Durata della Partita</v-card-title>
+                <v-list dark>
+                    <v-list-item>
+                        <v-list-item-content>
+                            <v-list-item-subtitle class="text-center regolamento-text">
+                                Ogni partita dura 26 minuti, suddivisi in:<br>- 3 minuti di tempo effettivo (3 shootout) all'inizio<br>- 20 minuti di partita 7 vs 7 con utilizzo carte<br>- 3 minuti di tempo effettivo (5 shootout) alla fine
+                            </v-list-item-subtitle>
+                        </v-list-item-content>
+                    </v-list-item>
+                </v-list>
+            </v-card>
+
+            <!-- Regola 3 -->
+            <v-card class="mb-4" color="rgba(0, 0, 0, 0.7)" dark>
+                <v-card-title class="custom-title justify-center">Calcio d’Inizio</v-card-title>
+                <v-list dark>
+                    <v-list-item>
+                        <v-list-item-content>
+                            <v-list-item-subtitle class="text-center regolamento-text">
+                                I giocatori iniziano schierati sulla propria linea di porta. La palla è al centro del campo. Al fischio dell’arbitro, chi arriva per primo al pallone ottiene il primo possesso.
+                            </v-list-item-subtitle>
+                        </v-list-item-content>
+                    </v-list-item>
+                </v-list>
+            </v-card>
+
+            <!-- Regola 4 -->
+            <v-card class="mb-4" color="rgba(0, 0, 0, 0.7)" dark>
+                <v-card-title class="custom-title justify-center">Regole del Campo</v-card-title>
+                <v-list dark>
+                    <v-list-item>
+                        <v-list-item-content>
+                            <v-list-item-subtitle class="text-center regolamento-text">
+                                Si gioca secondo le regole classiche del calcio a 7:<br>- Rimesse laterali con le mani<br>- Nessun fuorigioco<br><br>I calci di rigore sono eseguiti in modalità shootout.<br><br>Attenzione: Se il portiere commette fallo durante lo shootout, verrà assegnato un calcio di rigore tradizionale.
+                            </v-list-item-subtitle>
+                        </v-list-item-content>
+                    </v-list-item>
+                </v-list>
+            </v-card>
+
+            <!-- Regola 5 -->
+            <v-card class="mb-4" color="rgba(0, 0, 0, 0.7)" dark>
+                <v-card-title class="custom-title justify-center">Espulsione a Tempo</v-card-title>
+                <v-list dark>
+                    <v-list-item>
+                        <v-list-item-content>
+                            <v-list-item-subtitle class="text-center regolamento-text">
+                                L’arbitro può assegnare cartellini gialli e rossi.<br>- In caso di doppio giallo, il giocatore sconta 3 minuti fuori dal campo, lasciando la squadra in inferiorità numerica.<br><br>Attenzione: Comportamenti antisportivi o violenti possono portare all’espulsione definitiva e all’allontanamento dal campo.
+                            </v-list-item-subtitle>
+                        </v-list-item-content>
+                    </v-list-item>
+                </v-list>
+            </v-card>
+
+            <!-- Regola 6 -->
+            <v-card class="mb-4" color="rgba(0, 0, 0, 0.7)" dark>
+                <v-card-title class="custom-title justify-center">Vantaggio di 3 o più Gol</v-card-title>
+                <v-list dark>
+                    <v-list-item>
+                        <v-list-item-content>
+                            <v-list-item-subtitle class="text-center regolamento-text">
+                                Se una squadra va in vantaggio di 3 o più gol, dovrà giocare con uno o più giocatori in meno. Esempi:<br>- 3-0 → 6 vs 7<br>- 4-0 → 5 vs 7<br><br>Se la differenza si riduce a 2 gol, la parità numerica viene ripristinata.
+                            </v-list-item-subtitle>
+                        </v-list-item-content>
+                    </v-list-item>
+                </v-list>
+            </v-card>
+
+            <!-- Regola 7 -->
+            <v-card class="mb-4" color="rgba(0, 0, 0, 0.7)" dark>
+                <v-card-title class="custom-title justify-center">Carte</v-card-title>
+                <v-list dark>
+                    <v-list-item>
+                        <v-list-item-content>
+                            <v-list-item-subtitle class="text-center regolamento-text">
+                                Le carte da gioco sono illustrate sulla pagina Instagram @sanzeleague. Ogni squadra ha a disposizione diverse carte speciali:<br>
+                                - <strong>Rigore Presidenziale:</strong> Ogni squadra avrà a disposizione un rigore presidenziale. Shootout del presidente.<br>
+                                - <strong>Cambio Portiere:</strong> Il portiere verrà scambiato con un giocatore di movimento. Durata: 3 minuti o un gol.<br>
+                                - <strong>Doppia Espulsione:</strong> Vengono selezionati due giocatori della squadra avversaria da espellere per 3 minuti oppure al concretizzarsi di un gol.<br>
+                                - <strong>Rigore Casuale:</strong> Shootout in cui il tiratore verrà scelto dalla squadra avversaria. Compreso l'allenatore ma non il presidente.<br>
+                                - <strong>Bomber:</strong> Il gol del giocatore indicato varrà doppio. Valido fino al gol del giocatore selezionato, senza alcun limite di tempo.<br>
+                                L’allenatore deve richiedere l’attivazione della carta allo stand principale. Non è possibile attivare contemporaneamente due carte della stessa squadra.
+                            </v-list-item-subtitle>
+                        </v-list-item-content>
+                    </v-list-item>
+                </v-list>
+            </v-card>
+
+            <!-- Regola 8 -->
+            <v-card class="mb-4" color="rgba(0, 0, 0, 0.7)" dark>
+                <v-card-title class="custom-title justify-center">Quarti di Finale</v-card-title>
+                <v-list dark>
+                    <v-list-item>
+                        <v-list-item-content>
+                            <v-list-item-subtitle class="text-center regolamento-text">
+                                Le prime due squadre del girone unico e le squadre qualificate dai playoff accedono ai quarti di finale. Le partite dei quarti di finale si svolgono in modalità a eliminazione diretta.
+                            </v-list-item-subtitle>
+                        </v-list-item-content>
+                    </v-list-item>
+                </v-list>
+            </v-card>
+
+            <!-- Regola 9 -->
+            <v-card class="mb-4" color="rgba(0, 0, 0, 0.7)" dark>
+                <v-card-title class="custom-title justify-center">Ruota delle Modalità</v-card-title>
+                <v-list dark>
+                    <v-list-item>
+                        <v-list-item-content>
+                            <v-list-item-subtitle class="text-center regolamento-text">
+                                La ruota decide le modalità di gioco per i primi e ultimi 3 minuti di tempo effettivo. Le modalità includono:<br>- 4 vs 4<br>- Gol x2<br>- Shootout<br>- 1 vs 1<br>- 3 vs 3<br>- 2 vs 2
+                            </v-list-item-subtitle>
+                        </v-list-item-content>
+                    </v-list-item>
+                </v-list>
+            </v-card>
+
+            <!-- Regola 10 -->
+            <v-card class="mb-4" color="rgba(0, 0, 0, 0.7)" dark>
+                <v-card-title class="custom-title justify-center">Playoff</v-card-title>
+                <v-list dark>
+                    <v-list-item>
+                        <v-list-item-content>
+                            <v-list-item-subtitle class="text-center regolamento-text">
+                                I playoff si svolgono tra le squadre classificate dal 3° al 14° posto. Le partite dei playoff sono:<br>- 3° vs 14°<br>- 4° vs 13°<br>- 5° vs 12°<br>- 6° vs 11°<br>- 7° vs 10°<br>- 8° vs 9°
+                            </v-list-item-subtitle>
+                        </v-list-item-content>
+                    </v-list-item>
+                </v-list>
+            </v-card>
+
+            <!-- Regola 11 -->
+            <v-card class="mb-4" color="rgba(0, 0, 0, 0.7)" dark>
+                <v-card-title class="custom-title justify-center">Costi e Premi</v-card-title>
+                <v-list dark>
+                    <v-list-item>
+                        <v-list-item-content>
+                            <v-list-item-subtitle class="text-center regolamento-text">
+                                Costo di iscrizione:<br>- 20€ per i giocatori<br>- 10€ per presidenti e allenatori<br><br>Montepremi:<br>- La squadra vincitrice riceve 300€<br>- Cena gratuita alla 'Trattoria del Volt' di San Zenone al Lambro
+                            </v-list-item-subtitle>
+                        </v-list-item-content>
+                    </v-list-item>
+                </v-list>
+            </v-card>
+        </v-col>
+    </v-row>
+</v-container>
+
     </v-main>
-
-    <!-- Footer -->
-    <v-footer color="primary" dark padless>
-        <v-container class="text-center">
-            <v-img
-                src="/sanze/image/title.png"
-                contain
-                max-width="160"
-                class="mx-auto"
-            ></v-img>
-        </v-container>
-    </v-footer>
 </v-app>
+</div>
     `,
     data() {
         return {
-            regolamento: [
-                {
-                    titolo: "Durata della Partita",
-                    descrizione: "Ogni partita è formata da un tempo unico di 20 minuti. All’inizio e alla fine dei 20 minuti di gioco verranno giocati 3 minuti di TEMPO EFFETTIVO (il timer si ferma ogni volta che il gioco si interrompe) secondo la modalità “scelta dalla ruota”."
-                },
-                {
-                    titolo: "Calcio d’Inizio",
-                    descrizione: "Calcio d’inizio con giocatori schierati sulla linea di porta e palla posizionata al centro di centrocampo. Al fischio dell’arbitro chi per primo arriverà sulla palla otterrà il primo possesso."
-                },
-                {
-                    titolo: "Regole del Campo",
-                    descrizione: "Le regole del campo rimangono quelle del calcio a 7 classico: rimesse laterali con le mani, niente fuorigioco. Il calcio di rigore è sempre da considerarsi come SHOOTOUT. \n ATTENZIONE: In caso di fallo del portiere durante la battuta di uno shootout verrà assegnato un calcio di rigore."
-                },
-                {
-                    titolo: "Espulsione a Tempo",
-                    descrizione: "L’arbitro, come di consueto, avrà la possibilità di estrarre cartellini gialli e rossi. In caso di doppio cartellino giallo non vi sarebbe l’espulsione definitiva dal campo di gioco, bensì il giocatore verrà punito con tre minuti di fermo fuori dal campo e conseguente inferiorità numerica della propria squadra. \n ATTENZIONE!! Comportamenti antisportivi e di violenza possono essere puniti con espulsione definitiva e conseguente allontanamento dal campo di gioco."
-                },
-                {
-                    titolo: "Vantaggio di 3 o più Gol",
-                    descrizione: "In caso di vantaggio di 3 o più gol la squadra in vantaggio dovrà giocare rispettivamente con uno o più giocatori in meno. ES: 3-0 —> 6vs7; 4-0 —> 5vs7 e così via. Naturalmente se la squadra in svantaggio dovesse ritornare a due gol di distanza verrà ripristinata la parità numerica."
-                },
-                {
-                    titolo: "Carte da Gioco",
-                    descrizione: "Per quanto riguarda le carte da gioco disponibili potete trovare tutto sulla pagina Instagram @sanzeleague. Di seguito verranno riportate solamente le poche regole per l’utilizzo di tali carte da parte degli allenatori."
-                },
-                {
-                    titolo: "Carta Bonus e Rigore Presidenziale",
-                    descrizione: "Ogni squadra avrà a disposizione una carta bonus e un rigore presidenziale."
-                },
-                {
-                    titolo: "Attivazione delle Carte",
-                    descrizione: "L’allenatore di ogni squadra dovrà richiedere allo stand principale di attivare la propria carta. Alla prima interruzione di gioco la carta verrà attivata. Il gioco riprenderà da dove era stato interrotto."
-                },
-                {
-                    titolo: "Attivazione Contemporanea",
-                    descrizione: "NON è possibile attivare contemporaneamente due carte (della stessa squadra)."
-                },
-                {
-                    titolo: "Limitazioni delle Carte",
-                    descrizione: "Le carte “DOPPIA ESPULSIONE” e “CAMBIO PORTIERE” non possono essere applicate a giocatori con qualche bonus attivato. Es. se un giocatore della squadra A è stato scelto come “BOMBER” non sarà possibile per la squadra B o mandarlo in porta. Nel caso della sola “DOPPIA ESPULSIONE” non sarà possibile espellere il portiere avversario."
-                }
-            ]
         };
     },
     methods: {

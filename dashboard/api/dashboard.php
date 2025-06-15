@@ -3,7 +3,7 @@
 
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
-require_once '/home/u908685741/domains/rometimerror.it/public_html/sanze/api/db.php';
+require_once '/home/u908685741/domains/sanzeleague.com/public_html/api/db.php';
 
 try {
     $data = [];

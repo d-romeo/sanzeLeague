@@ -6,7 +6,7 @@ header('Content-Type: application/json; charset=utf-8');
 error_reporting(E_ALL);
 ini_set('display_errors', 0); // Disattiva l'output visivo degli errori
 
-require_once '/home/u908685741/domains/rometimerror.it/public_html/sanze/api/db.php';
+require_once '/home/u908685741/domains/sanzeleague.com/public_html/api/db.php';
 
 // Connessione al database
 $conn = new mysqli($host, $user, $pass, $db);

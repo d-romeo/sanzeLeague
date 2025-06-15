@@ -1,6 +1,6 @@
 <?php
 header('Content-Type: application/json');
-require_once '/home/u908685741/domains/rometimerror.it/public_html/sanze/api/db.php';
+require_once '/home/u908685741/domains/sanzeleague.com/public_html/api/db.php';
 
 // Connessione al database
 $conn = new mysqli($host, $user, $pass, $db);

@@ -12,8 +12,8 @@ export default {
                     </v-btn>
 
                     <!-- Giornate -->
-                    <v-card v-for="(giornata, index) in giornate" :key="index" class="mb-4" color="rgba(0, 0, 0, 0.7)">
-                        <v-card-title class="custom-title justify-center">{{ giornata.titolo }}</v-card-title>
+                    <v-card v-for="(giornata, index) in giornate" :key="index" class="mb-4" color="rgba(0, 0, 0, 0.36)">
+                        <v-card-title class="custom-title justify-center" style="color:rgba(255, 255, 255, 0.89)">{{ giornata.titolo }}</v-card-title>
                         <v-list dark>
                             <v-list-item v-for="(scontro, sindex) in giornata.scontri" :key="sindex">
                                 <v-list-item-content>
@@ -27,8 +27,8 @@ export default {
                     </v-card>
 
                     <!-- Fasi Finali -->
-                    <v-card class="mb-4" color="rgba(0, 0, 0, 0.7)">
-                        <v-card-title class="custom-title justify-center">FASE FINALI</v-card-title>
+                    <v-card class="mb-4" color="rgba(0, 0, 0, 0.36)">
+                        <v-card-title class="custom-title justify-center"  style="color:rgba(255, 255, 255, 0.89)">FASE FINALI</v-card-title>
                         <v-list dark>
                             <v-list-item>
                                 <v-list-item-content>
@@ -87,7 +87,7 @@ export default {
             return date.toLocaleDateString('it-IT', options);
         },
         fetchMatches() {
-            fetch('/sanze/api/getMatches.php')
+            fetch('/api/getMatches.php')
                 .then(response => {
                     if (!response.ok) {
                         throw new Error('Network response was not ok');

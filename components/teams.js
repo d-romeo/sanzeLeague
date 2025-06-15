@@ -1,5 +1,6 @@
 export default {
     template: `
+<div id="app" style="display: flex; flex-direction: column; min-height: 100vh;">
 <v-app>
     <v-main>
         <v-container>
@@ -14,7 +15,7 @@ export default {
                     <!-- Card per ogni squadra -->
                     <v-row>
                         <v-col cols="12" md="4" v-for="(squadra, index) in squadre" :key="index">
-                            <v-card class="mb-4 custom-card" dark>
+                            <v-card class="mb-4 custom-card" dark @click="$router.push('/teams/' + squadra.id_team)" style="cursor: pointer;">
                                 <v-card-title class="custom-card-title">{{ squadra.name }}</v-card-title>
                                 <v-card-text class="custom-card-text">
                                     <v-img
@@ -23,7 +24,15 @@ export default {
                                         max-width="100"
                                         class="mx-auto"
                                     ></v-img>
+                                    <v-row no-gutters>
+                                        <v-col cols="12" class="text-center mt-4">
+                                            <span class="text-caption font-italic" style="color: #333;">
+                                            Clicca e scopri la Rosa
+                                            </span>
+                                        </v-col>
                                 </v-card-text>
+
+                                </v-row>
                             </v-card>
                         </v-col>
                     </v-row>
@@ -31,20 +40,8 @@ export default {
             </v-row>
         </v-container>
     </v-main>
-
-    <!-- Footer -->
-    <v-footer color="primary" dark padless>
-        <v-container class="text-center">
-            <v-img
-                src="/sanze/image/title.png"
-                contain
-                max-width="160"
-                class="mx-auto"
-            ></v-img>
-        </v-container>
-    </v-footer>
 </v-app>
-
+</div>
     `,
     data() {
         return {
@@ -52,11 +49,14 @@ export default {
         };
     },
     methods: {
+        vaiARosa(id_squadra) {
+                this.$router.push(`/team/${id_squadra}`);
+            },
         goBack() {
             this.$router.go(-1); // Torna alla pagina precedente
         },
         caricaSquadre() {
-            fetch('/sanze/api/getTeams.php?action=load')
+            fetch('/api/getTeams.php?action=load')
                 .then(response => {
                     if (!response.ok) {
                         throw new Error('Network response was not ok');
