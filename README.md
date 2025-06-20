@@ -81,20 +81,6 @@ README.md
 * **UI/UX Design**: Vuetify con tema scuro e layout responsive
 * **Hosting**: Compatibile con server condivisi o Raspberry Pi
 
-## 📦 Installazione (manuale)
-
-1. Clona il repository:
-
-   ```
-   git clone https://github.com/tuonomeutente/sz-league.git
-   ```
-
-2. Configura il database MySQL importando il file `database.sql` (da creare se non presente).
-
-3. Configura il backend PHP per connettersi al tuo database.
-
-4. Apri `index.html` per la visualizzazione pubblica e `dashboard.html` per la gestione.
-
 ---
 
 ## 📬 Contatti
