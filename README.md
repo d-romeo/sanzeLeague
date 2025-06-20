@@ -4,7 +4,7 @@
 
 Il progetto include:
 
-* Un **sito pubblico** che mostra partite in corso, prossime partite, risultati, classifiche aggiornate, classifica marcatori e statistiche generali.
+* Un **sito pubblico** (www.sanzeleague.com) che mostra partite in corso, prossime partite, risultati, classifiche aggiornate, classifica marcatori e statistiche generali.
 * Una **dashboard amministrativa** per la gestione completa di squadre, partite, goal, giocatori e momenti del torneo.
 
 ---
